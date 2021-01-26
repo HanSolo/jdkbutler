@@ -1,0 +1,321 @@
+/*
+ * Copyright (c) 2021 by Gerrit Grunwald
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@font-face {
+    font-family: "SF Pro";
+    src: url('tools/SF-Pro.ttf');
+}
+
+
+.jdk-butler {
+    -fx-background-radius: 0 0 10 10;
+    -header-background   : #343535;
+    -main-background     : #1d1f20;
+    -content-background  : #242526;
+    -selection-background: #5d5d5d;
+    -border-color        : #494943;
+    -text-color          : #dddddd;
+    -dark-text-color     : #868687;
+    -control-background  : #5e5e5f;
+    -disabled-color      : #5e5c58;
+    -disabled-text-color : #a6a6a7;
+    -fx-background-color : -main-background;
+    -selection-color     : #277aff; /*#fbc600*/
+    -fx-font-family      : 'SF Pro';
+}
+
+
+.jdk-butler .header {
+    -fx-background-radius: 10 10 10 10;
+}
+
+.jdk-butler .scroll-pane {
+    -fx-background-color : -main-background;
+    -fx-background-insets: 0;
+    -fx-padding          : 0;
+}
+.jdk-butler .scroll-pane > .viewport {
+    -fx-background-color : -main-background;
+    -fx-background-insets: 0;
+    -fx-padding          : 0;
+}
+.jdk-butler .scroll-pane > .scroll-bar:horizontal {
+    visibility           : hidden;
+    -fx-background-insets: 0;
+    -fx-padding          : 0;
+}
+.jdk-butler .scroll-pane > .scroll-bar:horizontal > .increment-button,
+.jdk-butler .scroll-pane > .scroll-bar:horizontal > .decrement-button {
+    -fx-padding: 0;
+}
+.jdk-butler .scroll-pane > .scroll-bar:vertical {
+    visibility           : hidden;
+    -fx-background-insets: 0;
+    -fx-padding          : 0;
+}
+.jdk-butler .scroll-pane > .scroll-bar:vertical > .increment-button,
+.jdk-butler .scroll-pane > .scroll-bar:vertical > .decrement-button {
+    -fx-padding: 0;
+}
+
+
+.jdk-butler .major-version-box {
+    -fx-background-color: -content-background;
+    -fx-border-color    : -border-color;
+    -fx-border-style    : solid;
+    -fx-border-width    : 1;
+    -fx-border-radius   : 5 0 0 5;
+    -fx-padding         : 5;
+}
+.jdk-butler .major-version-box > .selectable-label {
+    -fx-text-fill  : -text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .major-version-box > .selectable-label:selected {
+    /*-fx-background-color: -selection-background;*/
+    -fx-text-fill       : -selection-color;
+}
+
+
+.jdk-butler .version-box {
+    -fx-background-color: -content-background;
+    -fx-border-color    : -border-color;
+    -fx-border-color    : -border-color -border-color -border-color transparent;
+    -fx-border-style    : solid solid solid none;
+    -fx-border-width    : 1 1 1 0;
+    -fx-padding         : 5;
+}
+.jdk-butler .version-box > .selectable-label {
+    -fx-text-fill  : -text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .version-box > .selectable-label:selected {
+    /*-fx-background-color: -selection-background;*/
+    -fx-text-fill       : -selection-color;
+}
+
+
+.jdk-butler .distribution-box {
+    -fx-background-color: -content-background;
+    -fx-border-color    : -border-color;
+    -fx-border-color    : -border-color -border-color -border-color transparent;
+    -fx-border-style    : solid solid solid none;
+    -fx-border-width    : 1 1 1 0;
+    -fx-padding         : 5;
+}
+.jdk-butler .distribution-box > .selectable-label {
+    -fx-text-fill  : -text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .distribution-box > .selectable-label:selected {
+    /*-fx-background-color: -selection-background;*/
+    -fx-text-fill       : -selection-color;
+}
+
+
+.jdk-butler .operating-system-box {
+    -fx-background-color: -content-background;
+    -fx-border-color    : -border-color;
+    -fx-border-color    : -border-color -border-color -border-color transparent;
+    -fx-border-style    : solid solid solid none;
+    -fx-border-width    : 1 1 1 0;
+    -fx-padding         : 5;
+}
+.jdk-butler .operating-system-box > .selectable-label {
+    -fx-text-fill  : -text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .operating-system-box > .selectable-label:selected {
+    /*-fx-background-color: -selection-background;*/
+    -fx-text-fill       : -selection-color;
+}
+
+
+.jdk-butler .architecture-box {
+    -fx-background-color: -content-background;
+    -fx-border-color    : -border-color;
+    -fx-border-color    : -border-color -border-color -border-color transparent;
+    -fx-border-style    : solid solid solid none;
+    -fx-border-width    : 1 1 1 0;
+    -fx-padding         : 5;
+}
+.jdk-butler .architecture-box > .selectable-label {
+    -fx-text-fill  : -text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .architecture-box > .selectable-label:selected {
+    /*-fx-background-color: -selection-background;*/
+    -fx-text-fill       : -selection-color;
+}
+
+
+.jdk-butler .archive-type-box {
+    -fx-background-color: -content-background;
+    -fx-border-color    : -border-color;
+    -fx-border-color    : -border-color -border-color -border-color transparent;
+    -fx-border-style    : solid solid solid none;
+    -fx-border-width    : 1 1 1 0;
+    -fx-border-radius   : 0 5 0 5;
+    -fx-padding         : 5;
+}
+.jdk-butler .archive-type-box > .selectable-label {
+    -fx-text-fill  : -text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .archive-type-box > .selectable-label:selected {
+    /*-fx-background-color: -selection-background;*/
+    -fx-text-fill       : -selection-color;
+}
+
+
+.jdk-butler .selectable-label > .selection-arrow {
+    -fx-background-color : transparent;
+    -fx-scale-shape      : true;
+    -fx-shape            : "M0,10 L10,0 L10,20 L0,10z";
+    -fx-translate-x      : 4;
+}
+.jdk-butler .selectable-label:selected > .selection-arrow {
+    -fx-background-color : -border-color, -content-background;
+    -fx-scale-x          : 1;
+    -fx-scale-y          : 1.5;
+    -fx-background-insets: 0 0 0 0, 0 0 0 2.5;
+}
+
+
+.jdk-butler .progress-bar {
+    -fx-pref-height                     : 5;
+    -fx-indeterminate-bar-length        : 60;
+    -fx-indeterminate-bar-escape        : true;
+    -fx-indeterminate-bar-flip          : true;
+    -fx-indeterminate-bar-animation-time: 2;
+}
+.jdk-butler .progress-bar > .bar {
+    -fx-background-color : white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-padding          : 1;
+}
+.jdk-butler .progress-bar:indeterminate > .bar {
+    -fx-background-color: white;
+}
+.jdk-butler .progress-bar > .track {
+    -fx-background-color : #3d3e39;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+}
+.jdk-butler .progress-bar:disabled > .track {
+    -fx-background-color : derive(rgb(60, 64, 67), -10%);
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+}
+
+
+.jdk-butler .text-field {
+    -fx-background-color   : -main-background;
+    -fx-border-color       : -border-color;
+    -fx-border-radius      : 5px;
+    -fx-text-fill          : -text-color;
+    -fx-prompt-text-fill   : -dark-text-color;
+    -fx-highlight-fill     : -selection-color;
+    -fx-highlight-text-fill: -text-color;
+    -fx-font-family        : 'SF Pro';
+}
+
+
+.jdk-butler .button {
+    -fx-pref-height      : 15;
+    -fx-background-color : -control-background;
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
+    -fx-background-radius: 5px;
+    -fx-padding          : 2 5 2 5;
+    -fx-text-fill        : -text-color;
+    -fx-alignment        : CENTER;
+    -fx-content-display  : LEFT;
+    -fx-font-family      : 'SF Pro';
+    -fx-font-size        : 12px;
+}
+.jdk-butler .button:armed {
+    -fx-pref-height      : 16;
+    -fx-background-color : -selection-color;
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
+    -fx-background-radius: 5px;
+    -fx-padding          : 2 5 2 5;
+    -fx-text-fill        : -text-color;
+    -fx-alignment        : CENTER;
+    -fx-content-display  : LEFT;
+}
+.jdk-butler .button:disabled {
+    -fx-background-color: -disabled-color;
+    -fx-text-fill       : -disabled-text-color;
+}
+
+
+.jdk-butler .check-box > .box,
+.jdk-butler .check-box:hover > .box {
+    -fx-min-width        : 14px;
+    -fx-min-height       : 14px;
+    -fx-max-width        : 14px;
+    -fx-max-height       : 14px;
+    -fx-pref-width       : 14px;
+    -fx-pref-height      : 14px;
+    -fx-background-color : linear-gradient(to bottom, #696463 0%, #4B4544 6%, #453F3E 8%, #575151 75%, #615C5B 98%, #565150 100%);
+    -fx-background-insets: 0;
+    -fx-background-radius: 2.8px;
+    -fx-padding          : 4 4 4 4;
+    -fx-text-fill        : -text-color;
+    -fx-alignment        : CENTER;
+    -fx-content-display  : LEFT;
+    -fx-effect           : dropshadow(two-pass-box , rgba(0, 0, 0, 0.1), 2, 0.0 , 0, 0);
+    -fx-font-family      : 'SF Pro';
+}
+.jdk-butler .check-box:armed > .box,
+.jdk-butler .check-box:selected > .box {
+    -fx-background-color : linear-gradient(to bottom, derive(-selection-color, 30%) 0%, -selection-color 6%, -selection-color 100%);
+}
+.jdk-butler .check-box:selected > .box > .mark,
+.jdk-butler .check-box:indeterminate  > .box > .mark {
+    -fx-background-color : white;
+    -fx-background-insets: 0;/*1 0 -1 0;*/
+}
+.jdk-butler .check-box {
+    -fx-label-padding: 0.0em 0.0em 0.0em 0.416667em; /* 0 0 0 5 */
+    -fx-text-fill: -text-color;
+}
+.jdk-butler .check-box > .box {
+    -fx-background-radius: 3, 2, 1;
+    -fx-padding          : 4 4 4 4;
+}
+.jdk-butler .check-box > .box > .mark {
+    -fx-background-color: null;
+    -fx-padding         : 5 5 3 5;
+    -fx-shape           : "M23.895,35.297L31.077,24.09C31.818,22.935 33.357,22.598 34.512,23.338C35.668,24.079 36.005,25.618 35.264,26.773L26.297,40.767C25.8,41.542 24.944,41.949 24.085,41.909C23.383,41.902 22.689,41.6 22.203,41.02L16.809,34.583C15.927,33.532 16.066,31.962 17.118,31.081C18.169,30.199 19.739,30.337 20.62,31.389L23.895,35.297Z";
+}
+
+
+.jdk-butler .title {
+    -fx-alignment  : CENTER;
+    -fx-font-family: 'SF Pro';
+    -fx-font-size  : 11;
+    -fx-text-fill  : -dark-text-color;
+}
+
+
+.jdk-butler .filename-label {
+    -fx-alignment  : CENTER-LEFT;
+    -fx-font-family: 'SF Pro';
+    -fx-font-size  : 11;
+    -fx-text-fill  : -text-color;
+}
