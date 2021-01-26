@@ -21,7 +21,7 @@ jobs:
         #run: .\build_app.bat
       - uses: AButler/upload-release-assets@v2.0
         with:
-          files: './.github/workflows/JDKButler-SNAPSHOT-*-windows-x64.msi'
+          files: './.github/workflows/JDKButler-15.0.msi'
           release-tag: SNAPSHOT
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 

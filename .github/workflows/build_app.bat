@@ -74,7 +74,7 @@ set JPKG_EXECUTABLE=%JPKG_HOME%\bin\jpackage
     --win-menu-group JDKButler
 
 REM Rename the application MSI
-move JDKButler-0.0.0.msi JDKButler-%APP_VERSION%-windows-x64.msi
+move JDKButler-0.0.0.msi JDKButler-%APP_VERSION%.msi
 
 REM Show final MSI package
 dir *.msi
