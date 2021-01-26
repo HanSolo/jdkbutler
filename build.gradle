@@ -19,7 +19,7 @@ config {
         name          = 'jdkbutler'
         description   = 'jdkbutler is a little demo project that shows how to create custom controls in JavaFX'
         vendor        = 'Hansolo'
-        inceptionYear = '2020'
+        inceptionYear = '2021'
         tags          = ['javafx', 'java']
 
         links {
@@ -113,10 +113,9 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.13.3'
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
     implementation 'javax.validation:validation-api:2.0.1.Final'
-    implementation 'org.kordamp.ikonli:ikonli-core:12.1.0'
-    implementation 'org.kordamp.ikonli:ikonli-javafx:12.1.0'
-    implementation 'org.kordamp.ikonli:ikonli-antdesignicons-pack:12.1.0'
 }
+
+mainClassName = '$moduleName/eu.hansolo.fx.jdkbutler.MainPreloader'
 
 java {
     modularity.inferModulePath.set(true)
@@ -128,16 +127,27 @@ javafx {
 }
 
 jar {
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.runtimeClasspath.collect {  it.isDirectory() ? it : zipTree(it)  }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
     manifest {
         attributes(
+                'Implementation-Title': 'JDKButler',
                 'Bundle-Name': project.name,
                 'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
                 'Bundle-Description': config.info.description,
                 'Bundle-SymbolicName': 'eu.hansolo.fx.jdkbutler',
-                'Export-Package': 'eu.hansolo.fx.jdkbutler,eu.hansolo.fx.jdkbutler.tools'
+                'Export-Package': 'eu.hansolo.fx.jdkbutler,eu.hansolo.fx.jdkbutler.tools,eu.hansolo.fx.jdkbutler.controls',
+                'Main-Class': 'eu.hansolo.fx.jdkbutler.Launcher'
         )
     }
 }
+
 
 // start the demo from gradle
 task main(type: JavaExec) {
