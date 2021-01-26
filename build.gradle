@@ -1,95 +1,26 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.2'
+        classpath 'org.javamodularity:moduleplugin:1.7.0'
+        classpath 'org.beryx:badass-jlink-plugin:2.23.2'
+    }
+}
+
 plugins {
-    id 'idea'
     id 'java-library'
     id 'application'
-    id 'org.kordamp.gradle.java-project'
-    id 'org.openjfx.javafxplugin'
-    id 'biz.aQute.bnd.builder'
+    id 'com.google.osdetector' version '1.6.2'
+    id 'org.javamodularity.moduleplugin' version '1.7.0'
+    id 'org.beryx.jlink' version '2.23.2'
 }
 
-if (!project.hasProperty('bintrayUsername'))  ext.bintrayUsername  = '**undefined**'
-if (!project.hasProperty('bintrayApiKey'))    ext.bintrayApiKey    = '**undefined**'
-if (!project.hasProperty('sonatypeUsername')) ext.sonatypeUsername = '**undefined**'
-if (!project.hasProperty('sonatypePassword')) ext.sonatypePassword = '**undefined**'
-
-config {
-    release = (rootProject.findProperty('release') ?: false).toBoolean()
-
-    info {
-        name          = 'jdkbutler'
-        description   = 'jdkbutler is a little demo project that shows how to create custom controls in JavaFX'
-        vendor        = 'Hansolo'
-        inceptionYear = '2021'
-        tags          = ['javafx', 'java']
-
-        links {
-            website      = 'https://github.com/HanSolo/jdkbutler/wiki'
-            issueTracker = 'https://github.com/HanSolo/jdkbutler/issues'
-            scm          = 'https://github.com/HanSolo/jdkbutler.git'
-        }
-
-        people {
-            person {
-                id    = 'HanSolo'
-                name  = 'Gerrit Grunwald'
-                url   = 'https://harmoniccode.blogspot.com/'
-                roles = ['developer']
-            }
-        }
-
-        credentials {
-            sonatype {
-                username = project.sonatypeUsername
-                password = project.sonatypePassword
-            }
-        }
-
-        repositories {
-            repository {
-                name = 'localRelease'
-                url  = "${project.rootProject.buildDir}/repos/local/release"
-            }
-            repository {
-                name = 'localSnapshot'
-                url  = "${project.rootProject.buildDir}/repos/local/snapshot"
-            }
-        }
-    }
-
-    licensing {
-        licenses {
-            license {
-                id = 'Apache-2.0'
-            }
-        }
-    }
-
-    bintray {
-        enabled      = true
-        userOrg      = 'hansolo'
-        repo         = 'jdkbutler'
-        name         = rootProject.name
-        publish      = config.release
-        credentials {
-            username = project.bintrayUsername
-            password = project.bintrayApiKey
-        }
-    }
-
-    publishing {
-        signing             = false
-        releasesRepository  = 'localRelease'
-        snapshotsRepository = 'localSnapshot'
-    }
-
-    docs {
-        javadoc {
-            autoLinks {
-                enabled = false
-            }
-        }
-    }
-}
+ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
 
 normalization {
     runtimeClasspath {
@@ -113,18 +44,13 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.13.3'
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
     implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'com.google.gradle:osdetector-gradle-plugin:1.6.2'
+    implementation "org.openjfx:javafx-base:${javafxVersion}:${platform}"
+    implementation "org.openjfx:javafx-graphics:${javafxVersion}:${platform}"
+    implementation "org.openjfx:javafx-controls:${javafxVersion}:${platform}"
 }
 
 mainClassName = '$moduleName/eu.hansolo.fx.jdkbutler.MainPreloader'
-
-java {
-    modularity.inferModulePath.set(true)
-}
-
-javafx {
-    version = javafxVersion
-    modules = [ 'javafx.base', 'javafx.graphics', 'javafx.controls' ]
-}
 
 jar {
     from {
@@ -138,36 +64,33 @@ jar {
     manifest {
         attributes(
                 'Implementation-Title': 'JDKButler',
-                'Bundle-Name': project.name,
-                'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
-                'Bundle-Description': config.info.description,
-                'Bundle-SymbolicName': 'eu.hansolo.fx.jdkbutler',
-                'Export-Package': 'eu.hansolo.fx.jdkbutler,eu.hansolo.fx.jdkbutler.tools,eu.hansolo.fx.jdkbutler.controls',
+                'Class-Path': 'jdkbutler-15.0.jar',
                 'Main-Class': 'eu.hansolo.fx.jdkbutler.Launcher'
         )
     }
 }
 
-
-// start the demo from gradle
-task main(type: JavaExec) {
-    main = "eu.hansolo.fx.jdkbutler.Launcher"
-    classpath = sourceSets.main.runtimeClasspath
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'eu.hansolo.spacefx'
+    }
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+tasks.withType(JavaExec) {
+    jvmArgs += "--enable-preview"
+}
 
-publishing {
-    publications {
-        main(MavenPublication) {
-            pom.withXml {
-                asNode().dependencies.'*'.findAll {
-                    it.groupId.text() == 'org.openjfx'
-                }.each {
-                    it.remove(it.classifier)
-                }
-            }
-        }
-    }
+// start the from gradle
+task Main(type: JavaExec) {
+    main = "eu.hansolo.fx.jdkbutler.Launcher"
+    classpath = sourceSets.main.runtimeClasspath
 }
 
 // Fix problems with loading resources

@@ -27,7 +27,7 @@
 
 JAVA_VERSION=15
 MAIN_JAR="jdkbutler-15.0.jar"
-APP_VERSION=1.0.0
+APP_VERSION=15.0.0
 
 echo "java home: $JAVA_HOME"
 echo "project version: $PROJECT_VERSION"
@@ -110,4 +110,8 @@ do
   --runtime-image build/java-runtime \
   --icon src/main/resources/eu/hansolo/fx/jdkbutler/icon.icns \
   --app-version ${APP_VERSION} \
+  #--vendor "Alliance" \
+  #--copyright "Copyright © 2021 Alliance Inc." \
+  #--mac-package-identifier eu.hansolo.fx.jdkbutler \
+  #--mac-package-name Alliance
 done

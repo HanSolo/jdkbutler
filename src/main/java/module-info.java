@@ -3,9 +3,9 @@ module eu.hansolo.fx.jdkbutler {
     requires java.base;
 
     // Java-FX
-    requires transitive javafx.base;
-    requires transitive javafx.graphics;
-    requires transitive javafx.controls;
+    requires javafx.base;
+    requires javafx.graphics;
+    requires javafx.controls;
 
     // 3rd Party
     requires com.google.gson;
