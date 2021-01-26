@@ -26,7 +26,7 @@
 # APP_VERSION: the application version, e.g. 1.0.0, shown in "about" dialog
 
 JAVA_VERSION=15
-MAIN_JAR="JDKButler-1.0-SNAPSHOT.jar"
+MAIN_JAR="jdkbutler-15.0.jar"
 APP_VERSION=1.0.0
 
 echo "java home: $JAVA_HOME"
