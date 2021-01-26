@@ -73,7 +73,7 @@ jar {
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
-        name = 'eu.hansolo.spacefx'
+        name = 'eu.hansolo.fx.jdkbutler'
     }
 }
 
