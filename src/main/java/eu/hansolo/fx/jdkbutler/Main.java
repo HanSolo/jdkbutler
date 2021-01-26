@@ -45,7 +45,6 @@
  import io.foojay.api.discoclient.pkg.VersionNumber;
  import javafx.application.Application;
  import javafx.application.Platform;
- import javafx.application.Preloader;
  import javafx.geometry.Insets;
  import javafx.geometry.Pos;
  import javafx.scene.Scene;
@@ -55,7 +54,6 @@
  import javafx.scene.control.ProgressBar;
  import javafx.scene.control.ScrollPane;
  import javafx.scene.control.ScrollPane.ScrollBarPolicy;
- import javafx.scene.control.TextField;
  import javafx.scene.control.Toggle;
  import javafx.scene.control.ToggleGroup;
  import javafx.scene.effect.BlurType;
@@ -73,11 +71,8 @@
  import javafx.scene.layout.HBox;
  import javafx.scene.layout.Priority;
  import javafx.scene.layout.Region;
- import javafx.scene.layout.StackPane;
  import javafx.scene.layout.VBox;
  import javafx.scene.paint.Color;
- import javafx.scene.shape.Circle;
- import javafx.scene.shape.Line;
  import javafx.stage.DirectoryChooser;
  import javafx.stage.Stage;
  import javafx.stage.StageStyle;
@@ -97,10 +92,10 @@
   * Time: 12:05
   */
  public class Main extends Application {
-     private static final double                PADDING          = 10;
-     private static final double                TEXT_PADDING     = -5;
-     private static final double                SPACING          = 0;
-     private static final double                MIN_COLUMN_WIDTH = 120;
+     private static final double                PADDING                = 10;
+     private static final double                TEXT_PADDING           = -5;
+     private static final double                SPACING                = 0;
+     private static final double                MIN_COLUMN_WIDTH       = 120;
      private              Stage                 stage;
      private              DiscoClient           discoClient;
      private              DirectoryChooser      directoryChooser;
@@ -409,10 +404,12 @@
              if (nv) {
                  headerPane.setBackground(new Background(new BackgroundFill(Color.web("#343535"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
                  title.setTextFill(Color.web("#dddddd"));
+                 versionSearchField.setStyle("-fx-background-color: #343535;");
                  closeButton.setDisable(false);
              } else {
                  headerPane.setBackground(new Background(new BackgroundFill(Color.web("#282927"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
                  title.setTextFill(Color.web("#696a68"));
+                 versionSearchField.setStyle("-fx-background-color: #282927;");
                  closeButton.setDisable(true);
              }
          });
