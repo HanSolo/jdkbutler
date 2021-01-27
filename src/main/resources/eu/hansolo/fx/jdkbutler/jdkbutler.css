@@ -34,6 +34,7 @@
     -disabled-text-color : #a6a6a7;
     -fx-background-color : -main-background;
     -selection-color     : #277aff; /*#fbc600*/
+    -focused-color       : #286e99;
     -fx-font-family      : 'SF Pro';
 }
 

@@ -28,14 +28,15 @@
     -disabled-color        : #5e5c58;
     -disabled-text-color   : #a6a6a7;
     -selection-color       : #277aff; /*#fbc600*/
+    -focused-color         : #286e99;
 
     -fx-text-fill          : -text-color;
     -fx-prompt-text-fill   : -control-background;
     -fx-background-insets  : 0 0 0 0;
     -fx-border-radius      : 5px;
-    -fx-min-height         : 26;
-    -fx-max-height         : 26;
-    -fx-pref-height        : 26;
+    -fx-min-height         : 28;
+    -fx-max-height         : 28;
+    -fx-pref-height        : 28;
     -fx-padding            : 0 0 0 29;
     -fx-background-color   : -header-background;
     -fx-border-color       : -border-color;
@@ -76,6 +77,12 @@
     -fx-shape            : "M24,0 C37.255,0 48,10.745 48,24 C48,37.255 37.255,48 24,48 C10.745,48 -0,37.255 -0,24 C-0,10.745 10.745,0 24,0 z M32.839,11.626 L24,20.465 L15.161,11.626 L11.626,15.161 L20.464,24 L11.626,32.839 L15.161,36.374 L24,27.535 L32.839,36.374 L36.374,32.839 L27.535,24 L36.374,15.161 z";
 }
 
+.search-field:focused {
+    -fx-border-color : -focused-color, -focused-color;
+    -fx-border-radius: 7, 5;
+    -fx-border-width : 3, 1;
+    -fx-border-insets: -3, 0;
+}
 
 
 
