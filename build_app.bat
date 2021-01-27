@@ -11,6 +11,7 @@ rem APP_VERSION: the application version, e.g. 1.0.0, shown in "about" dialog
 
 set JAVA_VERSION=15
 set MAIN_JAR=jdkbutler-15.0.jar
+set APP_VERSION=15.0.0
 
 rem ------ SETUP DIRECTORIES AND FILES ----------------------------------------
 rem Remove previously generated java runtime and installers. Copy all required
@@ -62,7 +63,7 @@ call "%JAVA_HOME%\bin\jlink" ^
   --compress=2 ^
   --strip-debug ^
   --add-modules %detected_modules%,%manual_modules% ^
-  --output build/java-runtime
+  --output build\java-runtime
 
 
 rem ------ PACKAGING ----------------------------------------------------------
@@ -71,15 +72,14 @@ rem the end we will find all packages inside the target/installer directory.
 
 for %%s in ("app-image" "msi" "exe") do call "%JPACKAGE_HOME%\bin\jpackage" ^
   --type %%s ^
-  --dest build/installer ^
-  --input build/installer/input/libs ^
+  --dest build\installer ^
+  --input build\installer\input\libs ^
   --name JDKButler ^
   --main-class eu.hansolo.fx.jdkbutler.Launcher ^
   --main-jar %MAIN_JAR% ^
   --java-options -Xmx2048m ^
   --java-options '--enable-preview' ^
-  --runtime-image target/java-runtime ^
+  --runtime-image build\java-runtime ^
   --icon src\main\resources\eu\hansolo\fx\jdkbutler\icon.ico ^
   --app-version %APP_VERSION% ^
-  --vendor "Alliance" ^
-  --copyright "Copyright © 2019 Alliance"
+
