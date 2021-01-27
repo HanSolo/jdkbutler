@@ -1,4 +1,4 @@
-# Disco API
+# JDKButler
 
 ![Logo](https://github.com/HanSolo/jdkbutler/raw/main/JDK_Butler_Duke.png)
 
