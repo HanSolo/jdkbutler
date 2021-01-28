@@ -15,14 +15,14 @@ jobs:
           java-version: 15
           architecture: x64
       - name: Build with Gradle
-        run: .\gradlew.bat build
+        run: .\gradlew.bat assemble
       - name: Create Distribution
         run: .\build_app.bat
-      - uses: AButler/upload-release-assets@v2.0
+      - uses: actions/upload-artifact@v2
         with:
+          name: JDKButler
           files: '.\build\installer\JDKButler-15.0.0.msi'
-          release-tag: SNAPSHOT
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
 
 
   build-mac:
