@@ -16,6 +16,20 @@
 
 package eu.hansolo.fx.jdkbutler.tools;
 
+import javafx.scene.paint.Color;
+
+
 public class Helper {
 
+    public static final double clamp(final double min, final double max, final double value) {
+        if (value < min) { return min; }
+        if (value > max) { return max; }
+        return value;
+    }
+
+    public static final Color getColorWithOpacity(final Color color, final double opacity) {
+        return Color.color(color.getRed(), color.getGreen(), color.getBlue(), clamp(0, 1, opacity));
+    }
+
+    public static final String colorToCss(final Color color) { return color.toString().replace("0x", "#"); }
 }

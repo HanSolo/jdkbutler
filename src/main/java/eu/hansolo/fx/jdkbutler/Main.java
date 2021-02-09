@@ -16,11 +16,13 @@
 
  package eu.hansolo.fx.jdkbutler;
 
- import eu.hansolo.fx.jdkbutler.controls.CircularButton;
- import eu.hansolo.fx.jdkbutler.controls.CircularButton.Type;
+ import eu.hansolo.fx.jdkbutler.controls.MacOSWindowButton;
  import eu.hansolo.fx.jdkbutler.controls.SearchField;
  import eu.hansolo.fx.jdkbutler.controls.SelectableLabel;
+ import eu.hansolo.fx.jdkbutler.tools.Detector;
+ import eu.hansolo.fx.jdkbutler.tools.Detector.MacOSAccentColor;
  import eu.hansolo.fx.jdkbutler.tools.Fonts;
+ import eu.hansolo.fx.jdkbutler.tools.Helper;
  import eu.hansolo.fx.jdkbutler.tools.ResizeHelper;
  import io.foojay.api.discoclient.DiscoClient;
  import io.foojay.api.discoclient.event.CacheEvt;
@@ -45,6 +47,9 @@
  import io.foojay.api.discoclient.pkg.VersionNumber;
  import javafx.application.Application;
  import javafx.application.Platform;
+ import javafx.beans.property.BooleanProperty;
+ import javafx.beans.property.BooleanPropertyBase;
+ import javafx.css.PseudoClass;
  import javafx.geometry.Insets;
  import javafx.geometry.Pos;
  import javafx.scene.Scene;
@@ -96,7 +101,10 @@
      private static final double                TEXT_PADDING           = -5;
      private static final double                SPACING                = 0;
      private static final double                MIN_COLUMN_WIDTH       = 120;
+     private static final PseudoClass           DARK_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
      private              Stage                 stage;
+     private              BooleanProperty       darkMode;
+     private              AnchorPane            pane;
      private              DiscoClient           discoClient;
      private              DirectoryChooser      directoryChooser;
      private              SearchField           versionSearchField;
@@ -144,6 +152,7 @@
      private              ArchiveType           selectedArchiveType;
      private              Pkg                   selectedPkg;
      private              OperatingSystem       os;
+     private              MacOSAccentColor      accentColor;
 
 
      // ******************** Initialization ***********************************
@@ -162,8 +171,28 @@
          pkgs                       = new LinkedList<>();
          archiveTypes               = new LinkedList<>();
          archiveTypeToggleGroup     = new ToggleGroup();
+         darkMode                   = new BooleanPropertyBase(false) {
+             @Override protected void invalidated() {
+                 pane.pseudoClassStateChanged(DARK_MODE_PSEUDO_CLASS, get());
+                 System.out.println("DarkMode: " + get());
+             }
+             @Override public Object getBean() { return Main.this; }
+             @Override public String getName() { return "darkMode"; }
+         };
+         pane                       = new AnchorPane();
+         os                         = discoClient.getOperatingSystem();
 
-         os = discoClient.getOperatingSystem();
+         darkMode.set(Detector.isDarkMode());
+         if (Detector.OperatingSystem.MACOS == Detector.getOperatingSystem()) {
+             accentColor = Detector.getMacOSAccentColor();
+             if (darkMode.get()) {
+                 pane.setStyle("-selection-color: " + Helper.colorToCss(accentColor.getColorDark()));
+             } else {
+                 pane.setStyle("-selection-color: " + Helper.colorToCss(accentColor.getColorAqua()));
+             }
+         } else {
+             accentColor = MacOSAccentColor.MULTI_COLOR;
+         }
 
          directoryChooser = new DirectoryChooser();
          directoryChooser.setTitle("Choose target folder");
@@ -172,6 +201,20 @@
          versionSearchField = new SearchField();
          versionSearchField.setFont(Fonts.sfPro(14));
          versionSearchField.setPromptText("Version");
+         versionSearchField.focusedProperty().addListener((o, ov, nv) -> {
+             if (nv) {
+                 String focusedBorderColor = Helper.colorToCss((darkMode.get() ? accentColor.getColorDarkFocus() : accentColor.getColorAquaFocus()));
+                 String highlightColor     = Helper.colorToCss((darkMode.get() ? accentColor.getColorDarkHighlight() : accentColor.getColorAquaHighlight()));
+                 String highlightTextColor = darkMode.get() ? "white" : "black";
+                 String backgroundColor    = darkMode.get() ? "#343535" : "#edefef";
+
+                 versionSearchField.setStyle("-fx-background-color: " + backgroundColor + "; -fx-border-color: " + focusedBorderColor + ", " + focusedBorderColor + "; -fx-highlight-fill: " + highlightColor + "; -fx-highlight-text-fill: " + highlightTextColor);
+             } else {
+                 String borderColor     = darkMode.get() ? "#494943" : "#e0e1e1";
+                 String backgroundColor = darkMode.get() ? "#343535" : "#edefef";
+                 versionSearchField.setStyle("-fx-background-color: " + backgroundColor + "; -fx-border-color: " + borderColor + "; -fx-highlight-fill: transparent;");
+             }
+         });
 
          allOperatingSystemsCheckBox = new CheckBox("All operating systems");
          allOperatingSystemsCheckBox.setFont(Fonts.sfPro(14));
@@ -288,12 +331,39 @@
          versionSearchField.setOnAction(e -> {
              String text = versionSearchField.getText();
              if (null == text || text.isEmpty()) { return; }
-             VersionNumber versionNumber = VersionNumber.fromText(text);
+
+             String[] textToParse;
+             if (text.contains(",")) {
+                 textToParse = text.split(",");
+             } else {
+                 textToParse = new String[] { text };
+             }
+
+             VersionNumber   versionNumber   = null;
+             SemVer          semVer          = null;
+             Distribution    distribution    = null;
+             OperatingSystem operatingSystem = null;
+
+             for (String t : textToParse) {
+                 if (null == versionNumber) {
+                     versionNumber = VersionNumber.fromText(t);
+                     if (null != versionNumber) {
+                         semVer = SemVer.fromText(t).getSemVer1();
+                     }
+                 }
+                 if (null == distribution || Distribution.NOT_FOUND.equals(distribution)) {
+                     distribution = Distribution.fromText(t.toLowerCase());
+                 }
+                 if (null == operatingSystem || OperatingSystem.NOT_FOUND.equals(operatingSystem)) {
+                     operatingSystem = OperatingSystem.fromText(t.toLowerCase());
+                 }
+             }
+
              if (null == versionNumber) { return; }
-             SemVer semVer = SemVer.fromText(text).getSemVer1();
+             int featureVersion = versionNumber.getFeature().getAsInt();
              Optional<Toggle> optionalMajorVersionToggle = majorVersionToggleGroup.getToggles()
                                                                                   .stream()
-                                                                                  .filter(toggle -> ((MajorVersion)((SelectableLabel) toggle).getData()).getAsInt() == versionNumber.getFeature().getAsInt())
+                                                                                  .filter(toggle -> ((MajorVersion)((SelectableLabel) toggle).getData()).getAsInt() == featureVersion)
                                                                                   .findFirst();
              if (optionalMajorVersionToggle.isPresent()) {
                  optionalMajorVersionToggle.get().setSelected(true);
@@ -304,6 +374,28 @@
                                                                             .findFirst();
                  if (optionalVersionToggle.isPresent()) {
                      optionalVersionToggle.get().setSelected(true);
+                 }
+             }
+
+             if (null != distribution) {
+                 String distributionUiString = distribution.getUiString();
+                 Optional<Toggle> optionalDistributionToggle = distributionToggleGroup.getToggles()
+                                                                                      .stream()
+                                                                                      .filter(toggle -> ((Distribution) ((SelectableLabel) toggle).getData()).getUiString().equals(distributionUiString))
+                                                                                      .findFirst();
+                 if (optionalDistributionToggle.isPresent()) {
+                     optionalDistributionToggle.get().setSelected(true);
+                 }
+             }
+
+             if (null != operatingSystem && null != distribution) {
+                 String operatingSystemUiString = operatingSystem.getUiString();
+                 Optional<Toggle> optionalOperatingSystemToggle = operatingSystemToggleGroup.getToggles()
+                                                                                            .stream()
+                                                                                            .filter(toggle -> ((OperatingSystem) ((SelectableLabel) toggle).getData()).getUiString().equals(operatingSystemUiString))
+                                                                                            .findFirst();
+                 if (optionalOperatingSystemToggle.isPresent()) {
+                     optionalOperatingSystemToggle.get().setSelected(true);
                  }
              }
 
@@ -341,7 +433,11 @@
          headerPane.setMinHeight(52);
          headerPane.setMaxHeight(52);
          headerPane.setPrefHeight(52);
-         headerPane.setBackground(new Background(new BackgroundFill(Color.web("#343535"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+         if (darkMode.get()) {
+             headerPane.setBackground(new Background(new BackgroundFill(Color.web("#343535"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+         } else {
+             headerPane.setBackground(new Background(new BackgroundFill(Color.web("#efedec"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+         }
          headerPane.setEffect(new DropShadow(BlurType.TWO_PASS_BOX,Color.rgb(0, 0, 0, 0.1),1, 0.0, 0, 1));
          headerPane.setOnMousePressed(press -> {
              headerPane.setOnMouseDragged(drag -> {
@@ -350,27 +446,35 @@
              });
          });
 
-         CircularButton closeButton = new CircularButton(Type.CLOSE);
-         closeButton.setOnMouseReleased((Consumer<MouseEvent>) e -> stop());
+         MacOSWindowButton closeWindowButton = new MacOSWindowButton(MacOSWindowButton.Type.CLOSE);
+         closeWindowButton.setOnMouseReleased((Consumer<MouseEvent>) e -> stop());
+         closeWindowButton.setOnMouseEntered(e -> closeWindowButton.setHovered(true));
+         closeWindowButton.setOnMouseExited(e -> closeWindowButton.setHovered(false));
+         closeWindowButton.setDarkMode(darkMode.get());
+
 
          Label title = new Label("JDK Butler");
          title.setFont(Fonts.sfProTextMedium(16));
-         title.setTextFill(Color.web("#dddddd"));
+         title.setTextFill(darkMode.get() ? Color.web("#dddddd") : Color.web("#000000"));
          title.setMouseTransparent(true);
          title.setAlignment(Pos.CENTER);
 
-         AnchorPane.setTopAnchor(closeButton, 20d);
-         AnchorPane.setLeftAnchor(closeButton, 19d);
+         AnchorPane.setTopAnchor(closeWindowButton, 20d);
+         AnchorPane.setLeftAnchor(closeWindowButton, 19d);
          AnchorPane.setTopAnchor(title, 0d);
          AnchorPane.setRightAnchor(title, 0d);
          AnchorPane.setBottomAnchor(title, 0d);
          AnchorPane.setLeftAnchor(title, 0d);
          AnchorPane.setTopAnchor(versionSearchField, 12d);
          AnchorPane.setRightAnchor(versionSearchField, 10d);
-         headerPane.getChildren().addAll(closeButton, title, versionSearchField);
+         headerPane.getChildren().addAll(closeWindowButton, title, versionSearchField);
 
-         AnchorPane pane = new AnchorPane(mainBox);
-         pane.setBackground(new Background(new BackgroundFill(Color.web("#1d1f20"), new CornerRadii(0, 0, 10, 10, false), Insets.EMPTY)));
+         pane.getChildren().add(mainBox);
+         if (darkMode.get()) {
+             pane.setBackground(new Background(new BackgroundFill(Color.web("#1d1f20"), new CornerRadii(0, 0, 10, 10, false), Insets.EMPTY)));
+         } else {
+             pane.setBackground(new Background(new BackgroundFill(Color.web("#ecebe9"), new CornerRadii(0, 0, 10, 10, false), Insets.EMPTY)));
+         }
          pane.setPadding(new Insets(PADDING));
          pane.setPrefHeight(480);
          pane.getStyleClass().add("jdk-butler");
@@ -378,8 +482,16 @@
          BorderPane mainPane = new BorderPane();
          mainPane.setTop(headerPane);
          mainPane.setCenter(pane);
-         mainPane.setBackground(new Background(new BackgroundFill(Color.web("#1d1f20"), new CornerRadii(10), Insets.EMPTY)));
-         mainPane.setBorder(new Border(new BorderStroke(Color.web("#515352"), BorderStrokeStyle.SOLID, new CornerRadii(10, 10, 10, 10, false), new BorderWidths(1))));
+         if (darkMode.get()) {
+             mainPane.setBackground(new Background(new BackgroundFill(Color.web("#1d1f20"), new CornerRadii(10), Insets.EMPTY)));
+             mainPane.setBorder(new Border(new BorderStroke(Color.web("#515352"), BorderStrokeStyle.SOLID, new CornerRadii(10, 10, 10, 10, false), new BorderWidths(1))));
+             versionSearchField.setDarkMode(true);
+         } else {
+             mainPane.setBackground(new Background(new BackgroundFill(Color.web("#ecebe9"), new CornerRadii(10), Insets.EMPTY)));
+             mainPane.setBorder(new Border(new BorderStroke(Color.web("#f6f4f4"), BorderStrokeStyle.SOLID, new CornerRadii(10, 10, 10, 10, false), new BorderWidths(1))));
+             versionSearchField.setStyle("-fx-background-color: #edefef; -fx-border-color: #d2cfcf;");
+             versionSearchField.setDarkMode(false);
+         }
 
          Scene scene = new Scene(mainPane);
          scene.setFill(Color.TRANSPARENT);
@@ -402,15 +514,28 @@
          stage.setMinHeight(520);
          stage.focusedProperty().addListener((o, ov, nv) -> {
              if (nv) {
-                 headerPane.setBackground(new Background(new BackgroundFill(Color.web("#343535"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
-                 title.setTextFill(Color.web("#dddddd"));
-                 versionSearchField.setStyle("-fx-background-color: #343535;");
-                 closeButton.setDisable(false);
+                 if (darkMode.get()) {
+                     headerPane.setBackground(new Background(new BackgroundFill(Color.web("#343535"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+                     title.setTextFill(Color.web("#dddddd"));
+                     versionSearchField.setStyle("-fx-background-color: #343535;");
+                 } else {
+                     headerPane.setBackground(new Background(new BackgroundFill(Color.web("#edefef"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+                     title.setTextFill(Color.web("#000000"));
+                     versionSearchField.setStyle("-fx-background-color: #edefef;");
+                 }
+                 closeWindowButton.setDisable(false);
              } else {
-                 headerPane.setBackground(new Background(new BackgroundFill(Color.web("#282927"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
-                 title.setTextFill(Color.web("#696a68"));
-                 versionSearchField.setStyle("-fx-background-color: #282927;");
-                 closeButton.setDisable(true);
+                 if (darkMode.get()) {
+                     headerPane.setBackground(new Background(new BackgroundFill(Color.web("#282927"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+                     title.setTextFill(Color.web("#696a68"));
+                     versionSearchField.setStyle("-fx-background-color: #282927;");
+                 } else {
+                     headerPane.setBackground(new Background(new BackgroundFill(Color.web("#e5e7e7"), new CornerRadii(10, 10, 0, 0, false), Insets.EMPTY)));
+                     title.setTextFill(Color.web("#a9a6a6"));
+                     versionSearchField.setStyle("-fx-background-color: #e5e7e7; -fx-prompt-text-fill: #c7c6c4; -icon-color: #a7a6a5;");
+                     closeWindowButton.setStyle("-fx-fill: #ceccca;");
+                 }
+                 closeWindowButton.setDisable(true);
              }
          });
 

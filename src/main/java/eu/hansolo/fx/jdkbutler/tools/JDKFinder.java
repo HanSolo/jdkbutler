@@ -17,6 +17,7 @@
 package eu.hansolo.fx.jdkbutler.tools;
 
 
+import io.foojay.api.discoclient.pkg.OperatingSystem;
 import io.foojay.api.discoclient.pkg.SemVer;
 
 import java.io.IOException;
@@ -88,6 +89,8 @@ public class JDKFinder {
                 SemVer semVer = SemVer.fromText(result.group(2)).getSemVer1();
                 System.out.println(distribution + " " + semVer);
             });
+
+
             ExecutorService service  = Executors.newSingleThreadExecutor();
             service.submit(streamer);
             service.shutdown();

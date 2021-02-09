@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package eu.hansolo.fx.jdkbutler;
+package eu.hansolo.fx.jdkbutler.controls;
 
-import eu.hansolo.fx.jdkbutler.controls.SearchField;
-import javafx.geometry.Insets;
 import javafx.scene.control.skin.TextFieldSkin;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;

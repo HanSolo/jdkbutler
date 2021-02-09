@@ -16,6 +16,7 @@
 
 package eu.hansolo.fx.jdkbutler;
 
+import eu.hansolo.fx.jdkbutler.tools.Detector;
 import javafx.application.Application;
 
 

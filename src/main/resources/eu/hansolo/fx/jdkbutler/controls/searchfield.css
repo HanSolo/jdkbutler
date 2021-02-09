@@ -22,13 +22,14 @@
     -content-background    : #242526;
     -selection-background  : #5d5d5d;
     -border-color          : #494943;
-    -text-color            : #dddddd;
+    -text-color            : #252424;
     -dark-text-color       : #868687;
     -control-background    : #5e5e5f;
     -disabled-color        : #5e5c58;
     -disabled-text-color   : #a6a6a7;
     -selection-color       : #277aff; /*#fbc600*/
     -focused-color         : #286e99;
+    -icon-color            : #535352;
 
     -fx-text-fill          : -text-color;
     -fx-prompt-text-fill   : -control-background;
@@ -44,13 +45,18 @@
     -fx-text-fill          : -text-color;
     -fx-prompt-text-fill   : -dark-text-color;
     -fx-highlight-fill     : -selection-color;
-    -fx-highlight-text-fill: -text-color;
+    -fx-highlight-text-fill: white;
     -fx-font-family        : 'SF Pro';
     -fx-font-size          : 12px;
 }
+.search-field:dark,
+.search-field:dark:focused {
+    -fx-text-fill          : #dddddd;
+    -fx-highlight-text-fill: black;
+}
 
 .search-field .loupe {
-    -fx-background-color : #9a9a9b;
+    -fx-background-color : -icon-color;
     -fx-background-insets: 4.5;
     -fx-translate-x      : -25;
     -fx-min-width        : 25;
@@ -62,9 +68,12 @@
     -fx-scale-shape      : true;
     -fx-shape            : "M19.887,22.573c-2.07,1.519 -4.625,2.416 -7.387,2.416c-6.899,0 -12.5,-5.598 -12.5,-12.494c0,-6.896 5.601,-12.495 12.5,-12.495c6.899,0 12.5,5.599 12.5,12.495c0,2.711 -0.866,5.221 -2.335,7.269l7.76,7.761c0.771,0.771 0.771,2.022 0,2.793c-0.771,0.771 -2.022,0.771 -2.793,0l-7.745,-7.745Zm-4.893,-0.396c4.314,-1.109 7.506,-5.026 7.506,-9.682c-0,-5.517 -4.481,-9.996 -10,-9.996c-0.109,-0 -0.218,0.002 -0.327,0.005c-5.385,0.154 -9.709,4.574 -9.709,9.996c-0,5.519 4.481,10 10,10c0.874,0 1.722,-0.112 2.53,-0.323Z";
 }
+.search-field:dark .loupe {
+    -icon-color: #9a9a9b;
+}
 
 .search-field .cross-button {
-    -fx-background-color : #9a9a9b;
+    -fx-background-color : -icon-color;
     -fx-background-insets: 6;
     -fx-translate-x      : -1;
     -fx-min-width        : 25;
@@ -76,6 +85,9 @@
     -fx-scale-shape      : true;
     -fx-shape            : "M24,0 C37.255,0 48,10.745 48,24 C48,37.255 37.255,48 24,48 C10.745,48 -0,37.255 -0,24 C-0,10.745 10.745,0 24,0 z M32.839,11.626 L24,20.465 L15.161,11.626 L11.626,15.161 L20.464,24 L11.626,32.839 L15.161,36.374 L24,27.535 L32.839,36.374 L36.374,32.839 L27.535,24 L36.374,15.161 z";
 }
+.search-field:dark .cross-button {
+    -icon-color: #9a9a9b;
+}
 
 .search-field:focused {
     -fx-border-color : -focused-color, -focused-color;
@@ -83,6 +95,13 @@
     -fx-border-width : 3, 1;
     -fx-border-insets: -3, 0;
 }
+.search-field:dark:focused {
+    -fx-border-color : -focused-color, -focused-color;
+    -fx-border-radius: 7, 5;
+    -fx-border-width : 3, 1;
+    -fx-border-insets: -3, 0;
+}
+
 
 
 

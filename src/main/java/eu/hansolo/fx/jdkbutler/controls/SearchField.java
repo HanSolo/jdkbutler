@@ -16,15 +16,24 @@
 
 package eu.hansolo.fx.jdkbutler.controls;
 
-import eu.hansolo.fx.jdkbutler.SearchFieldSkin;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.BooleanPropertyBase;
+import javafx.css.PseudoClass;
 import javafx.scene.control.TextField;
 
 
 public class SearchField extends TextField {
+    private static final PseudoClass     DARK_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
+    private              BooleanProperty darkMode;
 
     public SearchField() {
         super();
+        darkMode = new BooleanPropertyBase(false) {
+            @Override protected void invalidated() { pseudoClassStateChanged(DARK_MODE_PSEUDO_CLASS, get()); }
+            @Override public Object getBean() { return SearchField.this; }
+            @Override public String getName() { return "darkMode"; }
+        };
         getStylesheets().add(getClass().getResource("searchfield.css").toExternalForm());
         if (Platform.isFxApplicationThread()) {
             setSkin(new SearchFieldSkin(this));
@@ -33,4 +42,8 @@ public class SearchField extends TextField {
         }
         getStyleClass().add("search-field");
     }
+
+    public boolean isDarkMode() { return darkMode.get(); }
+    public void setDarkMode(final boolean darkMode) { this.darkMode.set(darkMode); }
+    public BooleanProperty darkModeProperty() { return darkMode; }
 }
