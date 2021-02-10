@@ -16,6 +16,7 @@
 
 package eu.hansolo.fx.jdkbutler;
 
+import eu.hansolo.fx.jdkbutler.tools.Detector;
 import javafx.animation.FadeTransition;
 import javafx.application.Preloader;
 import javafx.application.Preloader.StateChangeNotification.Type;
@@ -46,7 +47,11 @@ public class MainPreloader extends Preloader {
     @Override public void start(final Stage stage) throws Exception {
         this.stage = stage;
         this.pane  = new StackPane(imageView);
-        pane.setBackground(new Background(new BackgroundFill(Color.web("#1d1f20"), new CornerRadii(10, false), Insets.EMPTY)));
+        if (Detector.isDarkMode()) {
+            pane.setBackground(new Background(new BackgroundFill(Color.web("#1d1f20"), new CornerRadii(10, false), Insets.EMPTY)));
+        } else {
+            pane.setBackground(new Background(new BackgroundFill(Color.web("#eaecec"), new CornerRadii(10, false), Insets.EMPTY)));
+        }
 
         Scene scene = new Scene(pane);
 
