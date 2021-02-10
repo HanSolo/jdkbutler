@@ -328,7 +328,7 @@
     -fx-background-color : -light-border-color, -light-content-background;
     -fx-scale-x          : 1;
     -fx-scale-y          : 1.5;
-    -fx-background-insets: 0 0 0 0, 0 0 0 2.5;
+    -fx-background-insets: -1 0 -1 0, 0 0 0 2.5;
 }
 
 
