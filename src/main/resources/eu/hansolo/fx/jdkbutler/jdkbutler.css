@@ -287,7 +287,7 @@
     -fx-border-color    : -light-border-color -light-border-color -light-border-color transparent;
     -fx-border-style    : solid solid solid none;
     -fx-border-width    : 1 1 1 0;
-    -fx-border-radius   : 0 5 0 5;
+    -fx-border-radius   : 0 5 5 0;
     -fx-padding         : 5;
 }
 .jdk-butler .archive-type-box > .selectable-label {
