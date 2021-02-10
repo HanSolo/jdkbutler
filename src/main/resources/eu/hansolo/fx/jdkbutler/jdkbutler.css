@@ -52,7 +52,7 @@
     -light-main-background    : #eaecec;
     -light-content-background : #e3e5e5;
     -selection-background     : #5d5d5d;
-    -dark-border-color        : #494943;
+    -dark-border-color        : #464646;
     -light-border-color       : #d2d4d4;
     -text-color               : #dddddd;
     -light-text-color         : #2a2a2a;
@@ -322,7 +322,7 @@
     -fx-background-color : -dark-border-color, -dark-content-background;
     -fx-scale-x          : 1;
     -fx-scale-y          : 1.5;
-    -fx-background-insets: 0 0 0 0, 0 0 0 2.5;
+    -fx-background-insets: -1 0 -1 0, 0 0 0 2.5;
 }
 .jdk-butler .selectable-label:selected > .selection-arrow {
     -fx-background-color : -light-border-color, -light-content-background;
