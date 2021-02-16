@@ -70,6 +70,8 @@ rem ------ PACKAGING ----------------------------------------------------------
 rem A loop iterates over the various packaging types supported by jpackage. In
 rem the end we will find all packages inside the target/installer directory.
 
+echo create package using jpackage
+
 for %%s in ("app-image" "msi" "exe") do call "%JPACKAGE_HOME%\bin\jpackage" ^
   --type %%s ^
   --dest build\installer ^
