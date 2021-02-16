@@ -640,7 +640,7 @@
              label.prefWidthProperty().bind(distributionBox.widthProperty());
              label.selectedProperty().addListener((o, ov, nv) -> {
                  if (nv) {
-                     selectedDistribution    = label.getData();
+                     selectedDistribution    = distribution;
                      selectedOperatingSystem = null;
                      selectedArchitecture    = null;
                      selectedArchiveType     = null;
@@ -648,10 +648,10 @@
                      downloadButton.setDisable(true);
                      filenameLabel.setText("-");
                      SemVer        semVer        = ((SelectableLabel<SemVer>) versionToggleGroup.getSelectedToggle()).getData();
-                     VersionNumber versionNumber = semVer.getVersionNumber();
+                     VersionNumber versionNumber = VersionNumber.fromText(semVer.toString(true));
                      ReleaseStatus releaseStatus = semVer.getReleaseStatus();
                      pkgs.clear();
-                     discoClient.getPkgsAsync(distribution, versionNumber, Latest.NONE, operatingSystem, LibCType.NONE, Architecture.NONE, Bitness.NONE, ArchiveType.NONE,
+                     discoClient.getPkgsAsync(distribution, versionNumber, Latest.EXPLICIT, operatingSystem, LibCType.NONE, Architecture.NONE, Bitness.NONE, ArchiveType.NONE,
                                               PackageType.JDK, javafxBundledCheckBox.isSelected(), true, releaseStatus, TermOfSupport.NONE, Scope.PUBLIC).thenAccept(pk -> {
                                                   pkgs.addAll(pk);
                                                   architectureBox.setVisible(false);
@@ -739,12 +739,12 @@
          this.archiveTypes.addAll(archiveTypes);
          this.archiveTypeToggleGroup.getToggles().clear();
          if (!this.archiveTypeBox.isVisible()) { this.archiveTypeBox.setVisible(true); }
-         List<SelectableLabel> labels      = new LinkedList<>();
+         List<SelectableLabel> labels = new LinkedList<>();
          List<Pkg> packages = new LinkedList<>();
          if (discoClient.cacheReady.get()) {
              packages.addAll(discoClient.getAllPackages());
          } else {
-             discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.NONE, selectedOperatingSystem, LibCType.NONE,selectedArchitecture,selectedArchitecture.getBitness(),ArchiveType.NONE,PackageType.JDK,javafxBundledCheckBox.isSelected(),true,selectedSemVer.getReleaseStatus(),TermOfSupport.NONE,Scope.PUBLIC).thenAccept(pkgsFound -> packages.addAll(pkgs));
+             discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.EXPLICIT, selectedOperatingSystem, LibCType.NONE,selectedArchitecture,selectedArchitecture.getBitness(),ArchiveType.NONE,PackageType.JDK,javafxBundledCheckBox.isSelected(),true,selectedSemVer.getReleaseStatus(),TermOfSupport.NONE,Scope.PUBLIC).thenAccept(pkgsFound -> packages.addAll(pkgs));
          }
          this.archiveTypes.forEach(archiveType -> {
              SelectableLabel<ArchiveType> label = new SelectableLabel<>(archiveType.getUiString(), archiveTypeToggleGroup, archiveType, false);
@@ -753,7 +753,7 @@
              label.prefWidthProperty().bind(archiveTypeBox.widthProperty());
              label.selectedProperty().addListener((o, ov, nv) -> {
                  if (nv) {
-                     selectedArchiveType = label.getData();
+                     selectedArchiveType = archiveType;
                      selectedPkg         = null;
                      downloadButton.setDisable(true);
                      Optional<Pkg> optionalPkg = packages.stream()
