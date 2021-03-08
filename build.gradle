@@ -15,9 +15,9 @@ buildscript {
 plugins {
     id 'java-library'
     id 'application'
-    id 'com.google.osdetector' version '1.6.2'
+    id 'com.google.osdetector' version '1.7.0'
     id 'org.javamodularity.moduleplugin' version '1.7.0'
-    id 'org.beryx.jlink' version '2.23.2'
+    id 'org.beryx.jlink' version '2.23.3'
 }
 
 ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
