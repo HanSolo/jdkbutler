@@ -352,6 +352,7 @@
              } else if (type.equals(DownloadEvt.DOWNLOAD_FINISHED)) {
                  downloadButton.setDisable(false);
                  progressBar.setProgress(0);
+                 reset();
              } else if (type.equals(DownloadEvt.DOWNLOAD_FAILED)) {
 
              }
