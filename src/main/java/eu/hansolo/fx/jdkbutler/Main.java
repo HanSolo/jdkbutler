@@ -652,7 +652,7 @@
                      VersionNumber versionNumber = VersionNumber.fromText(semVer.toString(true));
                      ReleaseStatus releaseStatus = semVer.getReleaseStatus();
                      pkgs.clear();
-                     discoClient.getPkgsAsync(distribution, versionNumber, Latest.EXPLICIT, operatingSystem, LibCType.NONE, Architecture.NONE, Bitness.NONE, ArchiveType.NONE,
+                     discoClient.getPkgsAsync(distribution, versionNumber, Latest.NONE, operatingSystem, LibCType.NONE, Architecture.NONE, Bitness.NONE, ArchiveType.NONE,
                                               PackageType.JDK, javafxBundledCheckBox.isSelected(), true, releaseStatus, TermOfSupport.NONE, Scope.PUBLIC).thenAccept(pk -> {
                                                   pkgs.addAll(pk);
                                                   architectureBox.setVisible(false);
@@ -745,7 +745,7 @@
          if (discoClient.cacheReady.get()) {
              packages.addAll(discoClient.getAllPackages());
          } else {
-             discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.EXPLICIT, selectedOperatingSystem, LibCType.NONE,selectedArchitecture,selectedArchitecture.getBitness(),ArchiveType.NONE,PackageType.JDK,javafxBundledCheckBox.isSelected(),true,selectedSemVer.getReleaseStatus(),TermOfSupport.NONE,Scope.PUBLIC).thenAccept(pkgsFound -> packages.addAll(pkgs));
+             discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.NONE, selectedOperatingSystem, LibCType.NONE,selectedArchitecture,selectedArchitecture.getBitness(),ArchiveType.NONE,PackageType.JDK,javafxBundledCheckBox.isSelected(),true,selectedSemVer.getReleaseStatus(),TermOfSupport.NONE,Scope.PUBLIC).thenAccept(pkgsFound -> packages.addAll(pkgs));
          }
          this.archiveTypes.forEach(archiveType -> {
              SelectableLabel<ArchiveType> label = new SelectableLabel<>(archiveType.getUiString(), archiveTypeToggleGroup, archiveType, false);
@@ -790,27 +790,29 @@
      }
 
      private void reset() {
-         versionSearchField.setText("");
-         selectedSemVer          = null;
-         selectedDistribution    = null;
-         selectedOperatingSystem = null;
-         selectedArchitecture    = null;
-         selectedArchiveType     = null;
-         selectedPkg             = null;
-         downloadButton.setDisable(true);
-         filenameLabel.setText("-");
-         versionBox.setVisible(false);
-         versions.clear();
-         distributionBox.setVisible(false);
-         distributions.clear();
-         operatingSystemBox.setVisible(false);
-         operatingSystems.clear();
-         architectureBox.setVisible(false);
-         architectures.clear();
-         archiveTypeBox.setVisible(false);
-         archiveTypes.clear();
+         Platform.runLater(() -> {
+             versionSearchField.setText("");
+             selectedSemVer          = null;
+             selectedDistribution    = null;
+             selectedOperatingSystem = null;
+             selectedArchitecture    = null;
+             selectedArchiveType     = null;
+             selectedPkg             = null;
+             downloadButton.setDisable(true);
+             filenameLabel.setText("-");
+             versionBox.setVisible(false);
+             versions.clear();
+             distributionBox.setVisible(false);
+             distributions.clear();
+             operatingSystemBox.setVisible(false);
+             operatingSystems.clear();
+             architectureBox.setVisible(false);
+             architectures.clear();
+             archiveTypeBox.setVisible(false);
+             archiveTypes.clear();
 
-         updateMajorVersions();
+             updateMajorVersions();
+         });
      }
 
      private Label createColumnTitleLabel(final String text) {
