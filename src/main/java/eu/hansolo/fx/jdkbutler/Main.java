@@ -176,10 +176,7 @@
          archiveTypes               = new LinkedList<>();
          archiveTypeToggleGroup     = new ToggleGroup();
          darkMode                   = new BooleanPropertyBase(false) {
-             @Override protected void invalidated() {
-                 pane.pseudoClassStateChanged(DARK_MODE_PSEUDO_CLASS, get());
-                 System.out.println("DarkMode: " + get());
-             }
+             @Override protected void invalidated() { pane.pseudoClassStateChanged(DARK_MODE_PSEUDO_CLASS, get()); }
              @Override public Object getBean() { return Main.this; }
              @Override public String getName() { return "darkMode"; }
          };
