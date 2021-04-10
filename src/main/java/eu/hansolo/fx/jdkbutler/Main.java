@@ -25,7 +25,6 @@
  import eu.hansolo.fx.jdkbutler.tools.Helper;
  import eu.hansolo.fx.jdkbutler.tools.ResizeHelper;
  import io.foojay.api.discoclient.DiscoClient;
- import io.foojay.api.discoclient.event.CacheEvt;
  import io.foojay.api.discoclient.event.DownloadEvt;
  import io.foojay.api.discoclient.event.Evt;
  import io.foojay.api.discoclient.event.EvtObserver;
@@ -358,17 +357,6 @@
          discoClient.setOnEvt(DownloadEvt.DOWNLOAD_PROGRESS, downloadObserver);
          discoClient.setOnEvt(DownloadEvt.DOWNLOAD_FINISHED, downloadObserver);
          discoClient.setOnEvt(DownloadEvt.DOWNLOAD_FAILED, downloadObserver);
-
-         EvtObserver<CacheEvt> cacheObserver = e -> {
-             EvtType<? extends Evt> type = e.getEvtType();
-             if (type.equals(CacheEvt.CACHE_READY)) {
-                System.out.println("Cache ready");
-             } else if (type.equals(CacheEvt.CACHE_UPDATING)) {
-                 System.out.println("Cache updating");
-             }
-         };
-         discoClient.setOnEvt(CacheEvt.CACHE_READY, cacheObserver);
-         discoClient.setOnEvt(CacheEvt.CACHE_UPDATING, cacheObserver);
 
          headerPane.setOnMousePressed(press -> headerPane.setOnMouseDragged(drag -> {
              stage.setX(drag.getScreenX() - press.getSceneX());
@@ -739,11 +727,7 @@
          if (!this.archiveTypeBox.isVisible()) { this.archiveTypeBox.setVisible(true); }
          List<SelectableLabel> labels = new LinkedList<>();
          List<Pkg> packages = new LinkedList<>();
-         if (discoClient.cacheReady.get()) {
-             packages.addAll(discoClient.getAllPackages());
-         } else {
-             discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.NONE, selectedOperatingSystem, LibCType.NONE,selectedArchitecture,selectedArchitecture.getBitness(),ArchiveType.NONE,PackageType.JDK,javafxBundledCheckBox.isSelected(),true,selectedSemVer.getReleaseStatus(),TermOfSupport.NONE,Scope.PUBLIC).thenAccept(pkgsFound -> packages.addAll(pkgs));
-         }
+         discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.NONE, selectedOperatingSystem, LibCType.NONE,selectedArchitecture,selectedArchitecture.getBitness(),ArchiveType.NONE,PackageType.JDK,javafxBundledCheckBox.isSelected(),true,selectedSemVer.getReleaseStatus(),TermOfSupport.NONE,Scope.PUBLIC).thenAccept(pkgsFound -> packages.addAll(pkgs));
          this.archiveTypes.forEach(archiveType -> {
              SelectableLabel<ArchiveType> label = new SelectableLabel<>(archiveType.getUiString(), archiveTypeToggleGroup, archiveType, false);
              label.setAlignment(Pos.CENTER_RIGHT);
