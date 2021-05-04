@@ -542,7 +542,7 @@
      // ******************** Methods ******************************************
      private void updateMajorVersions() {
          this.majorVersions.clear();
-         discoClient.getAllMajorVersionsAsync(Optional.empty(), Optional.of(true), Optional.of(true)).thenAccept(mvs -> {
+         discoClient.getAllMajorVersionsAsync(Optional.empty(), Optional.of(true), Optional.of(true), Optional.of(false)).thenAccept(mvs -> {
              this.majorVersions.addAll(mvs);
              List<SelectableLabel> labels = new LinkedList<>();
              majorVersions.forEach(majorVersion -> {
