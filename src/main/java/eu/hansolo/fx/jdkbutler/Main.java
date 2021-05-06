@@ -82,6 +82,8 @@
  import javafx.stage.StageStyle;
 
  import java.io.File;
+ import java.util.Collections;
+ import java.util.Comparator;
  import java.util.HashSet;
  import java.util.LinkedList;
  import java.util.List;
@@ -390,8 +392,8 @@
                          semVer = SemVer.fromText(t).getSemVer1();
                      }
                  }
-                 if (null == distribution || Distribution.NOT_FOUND.equals(distribution)) {
-                     distribution = Distribution.fromText(t.toLowerCase());
+                 if (null == distribution) {
+                     distribution = DiscoClient.getDistributionFromText(t.toLowerCase());
                  }
                  if (null == operatingSystem || OperatingSystem.NOT_FOUND.equals(operatingSystem)) {
                      operatingSystem = OperatingSystem.fromText(t.toLowerCase());
@@ -615,6 +617,7 @@
      private void updateDistributions(final List<Distribution> distributions) {
          this.distributions.clear();
          this.distributions.addAll(distributions);
+         Collections.sort(this.distributions, Comparator.comparing(Distribution::getName));
          this.distributionToggleGroup.getToggles().clear();
          if (!this.distributionBox.isVisible()) { this.distributionBox.setVisible(true); }
          List<SelectableLabel> labels = new LinkedList<>();
