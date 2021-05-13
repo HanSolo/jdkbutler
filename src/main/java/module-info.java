@@ -10,9 +10,7 @@ module eu.hansolo.fx.jdkbutler {
     // 3rd Party
     requires com.google.gson;
     requires slf4j.api;
-    requires org.apache.logging.log4j;
     requires io.foojay.api.discoclient;
-    requires java.validation;
 
     exports eu.hansolo.fx.jdkbutler;
     exports eu.hansolo.fx.jdkbutler.controls;
