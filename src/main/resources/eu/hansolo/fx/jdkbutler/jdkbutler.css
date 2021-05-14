@@ -583,3 +583,14 @@
 .jdk-butler:dark .filename-label {
     -fx-text-fill: -text-color;
 }
+
+
+.jdk-butler .info-label {
+    -fx-alignment  : CENTER-LEFT;
+    -fx-font-family: 'SF Pro';
+    -fx-font-size  : 1.0em;
+    -fx-text-fill  : -dark-text-color;
+}
+.jdk-butler:dark .info-label {
+    -fx-text-fill: -text-color;
+}

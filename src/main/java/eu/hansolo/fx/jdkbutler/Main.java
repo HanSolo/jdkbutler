@@ -44,6 +44,7 @@
  import io.foojay.api.discoclient.pkg.SemVer;
  import io.foojay.api.discoclient.pkg.TermOfSupport;
  import io.foojay.api.discoclient.pkg.VersionNumber;
+ import io.foojay.api.discoclient.util.OutputFormat;
  import javafx.application.Application;
  import javafx.application.Platform;
  import javafx.beans.property.BooleanProperty;
@@ -82,6 +83,7 @@
  import javafx.stage.StageStyle;
 
  import java.io.File;
+ import java.util.ArrayList;
  import java.util.Collections;
  import java.util.Comparator;
  import java.util.HashSet;
@@ -90,6 +92,7 @@
  import java.util.Optional;
  import java.util.Set;
  import java.util.function.Consumer;
+ import java.util.stream.Collectors;
 
 
  /**
@@ -114,6 +117,7 @@
      private              SearchField           versionSearchField;
      private              CheckBox              allOperatingSystemsCheckBox;
      private              CheckBox              javafxBundledCheckBox;
+     private              Label                 usageInfoLabel;
      private              HBox                  optionBox;
      private              Label                 majorVersionTitle;
      private              Label                 versionTitle;
@@ -236,7 +240,11 @@
          javafxBundledCheckBox = new CheckBox("JavaFX bundled");
          javafxBundledCheckBox.setFont(Fonts.sfPro(14));
 
-         optionBox = new HBox(10, allOperatingSystemsCheckBox, javafxBundledCheckBox);
+         usageInfoLabel = new Label("");
+         usageInfoLabel.getStyleClass().add("info-label");
+         HBox.setMargin(usageInfoLabel, new Insets(0, 0, 0, 30));
+
+         optionBox = new HBox(10, allOperatingSystemsCheckBox, javafxBundledCheckBox, usageInfoLabel);
 
          majorVersionTitle    = createColumnTitleLabel("Major Version");
          versionTitle         = createColumnTitleLabel("Version");
@@ -544,7 +552,7 @@
      // ******************** Methods ******************************************
      private void updateMajorVersions() {
          this.majorVersions.clear();
-         discoClient.getAllMajorVersionsAsync(Optional.empty(), Optional.of(true), Optional.of(true), Optional.of(false)).thenAccept(mvs -> {
+         discoClient.getAllMajorVersionsAsync(Optional.empty(), Optional.of(true), Optional.of(true), Optional.of(true)).thenAccept(mvs -> {
              this.majorVersions.addAll(mvs);
              List<SelectableLabel> labels = new LinkedList<>();
              majorVersions.forEach(majorVersion -> {
@@ -570,7 +578,7 @@
                          architectures.clear();
                          archiveTypeBox.setVisible(false);
                          archiveTypes.clear();
-                         updateVersions(majorVersion.getVersions());
+                         updateVersions(majorVersion);
                      }
                  });
                  labels.add(label);
@@ -579,9 +587,18 @@
          });
      }
 
-     private void updateVersions(final List<SemVer> versions) {
+     private void updateVersions(final MajorVersion majorVersion) {
+         List<SemVer> allVersions = majorVersion.getVersions();
+         if (!majorVersion.isEarlyAccessOnly()) {
+             allVersions = allVersions.stream()
+                                      .map(semver -> semver.getVersionNumber().toString(OutputFormat.REDUCED_COMPRESSED, true, false))
+                                      .distinct()
+                                      .map(versionString -> SemVer.fromText(versionString).getSemVer1())
+                                      .collect(Collectors.toList());
+
+         }
          this.versions.clear();
-         this.versions.addAll(versions);
+         this.versions.addAll(allVersions);
          this.versionToggleGroup.getToggles().clear();
          if (!this.versionBox.isVisible()) { this.versionBox.setVisible(true); }
          List<SelectableLabel> labels = new LinkedList<>();
@@ -753,6 +770,11 @@
                                                          .findFirst();
                      if (optionalPkg.isPresent()) {
                          selectedPkg = optionalPkg.get();
+                         switch(selectedPkg.getUsageInfo()) {
+                             case FREE_TO_USE    -> usageInfoLabel.setText("(Selected package is free to use)");
+                             case LICENSE_NEEDED -> usageInfoLabel.setText("(Selected pacakge needs a license for production use)");
+                             default             -> usageInfoLabel.setText("");
+                         }
                          downloadButton.setDisable(false);
                          filenameLabel.setText(selectedPkg.getFileName());
                      }
