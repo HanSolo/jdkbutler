@@ -25,10 +25,6 @@
  import eu.hansolo.fx.jdkbutler.tools.Helper;
  import eu.hansolo.fx.jdkbutler.tools.ResizeHelper;
  import io.foojay.api.discoclient.DiscoClient;
- import io.foojay.api.discoclient.event.DownloadEvt;
- import io.foojay.api.discoclient.event.Evt;
- import io.foojay.api.discoclient.event.EvtObserver;
- import io.foojay.api.discoclient.event.EvtType;
  import io.foojay.api.discoclient.pkg.Architecture;
  import io.foojay.api.discoclient.pkg.ArchiveType;
  import io.foojay.api.discoclient.pkg.Bitness;
@@ -45,10 +41,15 @@
  import io.foojay.api.discoclient.pkg.TermOfSupport;
  import io.foojay.api.discoclient.pkg.VersionNumber;
  import io.foojay.api.discoclient.util.OutputFormat;
+ import io.foojay.api.discoclient.util.PkgInfo;
+ import io.foojay.api.discoclient.util.ReadableConsumerByteChannel;
  import javafx.application.Application;
  import javafx.application.Platform;
  import javafx.beans.property.BooleanProperty;
  import javafx.beans.property.BooleanPropertyBase;
+ import javafx.concurrent.Task;
+ import javafx.concurrent.Worker;
+ import javafx.concurrent.Worker.State;
  import javafx.css.PseudoClass;
  import javafx.geometry.Insets;
  import javafx.geometry.Pos;
@@ -83,10 +84,16 @@
  import javafx.stage.StageStyle;
 
  import java.io.File;
- import java.util.ArrayList;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.net.URL;
+ import java.net.URLConnection;
+ import java.nio.channels.Channels;
+ import java.nio.channels.ReadableByteChannel;
  import java.util.Collections;
  import java.util.Comparator;
  import java.util.HashSet;
+ import java.util.LinkedHashSet;
  import java.util.LinkedList;
  import java.util.List;
  import java.util.Optional;
@@ -123,6 +130,7 @@
      private              Label                 versionTitle;
      private              Label                 distributionTitle;
      private              Label                 operatingSystemTitle;
+     private              Label                 libcTypeTitle;
      private              Label                 architectureTitle;
      private              Label                 archiveTypeTitle;
      private              HBox                  titleBox;
@@ -130,6 +138,7 @@
      private              VBox                  versionBox;
      private              VBox                  distributionBox;
      private              VBox                  operatingSystemBox;
+     private              VBox                  libcTypeBox;
      private              VBox                  architectureBox;
      private              VBox                  archiveTypeBox;
      private              HBox                  drillDownBox;
@@ -137,7 +146,7 @@
      private              VBox                  mainBox;
      private              Label                 filenameLabel;
      private              ProgressBar           progressBar;
-     private              Button                resetButton;
+     private              Button                cancelButton;
      private              Button                downloadButton;
      private              HBox                  buttonBox;
      private              List<MajorVersion>    majorVersions;
@@ -148,6 +157,8 @@
      private              ToggleGroup           distributionToggleGroup;
      private              List<OperatingSystem> operatingSystems;
      private              ToggleGroup           operatingSystemToggleGroup;
+     private              List<LibCType>        libcTypes;
+     private              ToggleGroup           libcTypeToggleGroup;
      private              List<Architecture>    architectures;
      private              ToggleGroup           architectureToggleGroup;
      private              List<ArchiveType>     archiveTypes;
@@ -156,17 +167,19 @@
      private              SemVer                selectedSemVer;
      private              Distribution          selectedDistribution;
      private              OperatingSystem       selectedOperatingSystem;
+     private              LibCType              selectedLibcType;
      private              Architecture          selectedArchitecture;
      private              ArchiveType           selectedArchiveType;
      private              Pkg                   selectedPkg;
      private              OperatingSystem       os;
      private              MacOSAccentColor      accentColor;
      private              BorderPane            mainPane;
+     private              Worker<Boolean>       worker;
 
 
      // ******************** Initialization ***********************************
      @Override public void init() {
-         discoClient                = new DiscoClient();
+         discoClient                = new DiscoClient("JdkButler");
          majorVersions              = new LinkedList<>();
          majorVersionToggleGroup    = new ToggleGroup();
          versions                   = new LinkedList<>();
@@ -175,6 +188,8 @@
          distributionToggleGroup    = new ToggleGroup();
          operatingSystems           = new LinkedList<>();
          operatingSystemToggleGroup = new ToggleGroup();
+         libcTypes                  = new LinkedList<>();
+         libcTypeToggleGroup        = new ToggleGroup();
          architectures              = new LinkedList<>();
          architectureToggleGroup    = new ToggleGroup();
          pkgs                       = new LinkedList<>();
@@ -250,9 +265,10 @@
          versionTitle         = createColumnTitleLabel("Version");
          distributionTitle    = createColumnTitleLabel("Distribution");
          operatingSystemTitle = createColumnTitleLabel("Operating System");
+         libcTypeTitle        = createColumnTitleLabel("Libc Type");
          architectureTitle    = createColumnTitleLabel("Architecture");
          archiveTypeTitle     = createColumnTitleLabel("Archive Type");
-         titleBox             = new HBox(10, majorVersionTitle, versionTitle, distributionTitle, operatingSystemTitle, architectureTitle, archiveTypeTitle);
+         titleBox             = new HBox(10, majorVersionTitle, versionTitle, distributionTitle, operatingSystemTitle, libcTypeTitle, architectureTitle, archiveTypeTitle);
 
          majorVersionBox = new VBox();
          majorVersionBox.getStyleClass().add("major-version-box");
@@ -278,6 +294,12 @@
          operatingSystemBox.setSpacing(10);
          operatingSystemBox.setVisible(false);
 
+         libcTypeBox = new VBox();
+         libcTypeBox.getStyleClass().add("libc-type-box");
+         libcTypeBox.setMinWidth(MIN_COLUMN_WIDTH);
+         libcTypeBox.setSpacing(10);
+         libcTypeBox.setVisible(false);
+
          architectureBox = new VBox();
          architectureBox.getStyleClass().add("architecture-box");
          architectureBox.setMinWidth(MIN_COLUMN_WIDTH);
@@ -290,7 +312,7 @@
          archiveTypeBox.setSpacing(10);
          archiveTypeBox.setVisible(false);
 
-         drillDownBox = new HBox(SPACING, majorVersionBox, versionBox, distributionBox, operatingSystemBox, architectureBox, archiveTypeBox);
+         drillDownBox = new HBox(SPACING, majorVersionBox, versionBox, distributionBox, operatingSystemBox, libcTypeBox, architectureBox, archiveTypeBox);
          drillDownBox.setFillHeight(true);
 
          scrollPane = new ScrollPane(drillDownBox);
@@ -304,14 +326,14 @@
          progressBar = new ProgressBar();
          progressBar.setProgress(0);
 
-         resetButton = new Button("Cancel");
-         resetButton.setFont(Fonts.sfPro(14));
+         cancelButton = new Button("Cancel");
+         cancelButton.setFont(Fonts.sfPro(14));
          downloadButton = new Button("Download");
          downloadButton.setFont(Fonts.sfPro(14));
          downloadButton.setDisable(true);
          Region spacer = new Region();
          HBox.setHgrow(spacer, Priority.ALWAYS);
-         buttonBox = new HBox(20, resetButton, spacer, downloadButton);
+         buttonBox = new HBox(20, cancelButton, spacer, downloadButton);
 
          mainBox = new VBox(5, optionBox, titleBox, scrollPane, filenameLabel, progressBar, buttonBox);
          AnchorPane.setTopAnchor(mainBox, 0d);
@@ -349,25 +371,6 @@
      }
 
      private void registerListeners() {
-         EvtObserver<DownloadEvt> downloadObserver = e -> {
-             EvtType<? extends Evt> type = e.getEvtType();
-             if (type.equals(DownloadEvt.DOWNLOAD_STARTED)) {
-                 downloadButton.setDisable(true);
-             } else if (type.equals(DownloadEvt.DOWNLOAD_PROGRESS)) {
-                 progressBar.setProgress((double) e.getFraction() / (double) e.getFileSize());
-             } else if (type.equals(DownloadEvt.DOWNLOAD_FINISHED)) {
-                 downloadButton.setDisable(false);
-                 progressBar.setProgress(0);
-                 reset();
-             } else if (type.equals(DownloadEvt.DOWNLOAD_FAILED)) {
-
-             }
-         };
-         discoClient.setOnEvt(DownloadEvt.DOWNLOAD_STARTED, downloadObserver);
-         discoClient.setOnEvt(DownloadEvt.DOWNLOAD_PROGRESS, downloadObserver);
-         discoClient.setOnEvt(DownloadEvt.DOWNLOAD_FINISHED, downloadObserver);
-         discoClient.setOnEvt(DownloadEvt.DOWNLOAD_FAILED, downloadObserver);
-
          headerPane.setOnMousePressed(press -> headerPane.setOnMouseDragged(drag -> {
              stage.setX(drag.getScreenX() - press.getSceneX());
              stage.setY(drag.getScreenY() - press.getSceneY());
@@ -469,7 +472,16 @@
 
          javafxBundledCheckBox.selectedProperty().addListener((o, ov, nv) -> reset());
 
-         resetButton.setOnAction(e -> reset());
+         cancelButton.setOnAction(e -> {
+             if (null != worker) {
+                 State state = worker.getState();
+                 if (state.equals(State.SCHEDULED) || state.equals(State.RUNNING)) {
+                     worker.cancel();
+                 }
+             } else {
+                 reset();
+             }
+         });
 
          downloadButton.setOnAction(e -> downloadPkg());
 
@@ -477,6 +489,7 @@
          versionTitle.prefWidthProperty().bind(versionBox.widthProperty());
          distributionTitle.prefWidthProperty().bind(distributionBox.widthProperty());
          operatingSystemTitle.prefWidthProperty().bind(operatingSystemBox.widthProperty());
+         libcTypeTitle.prefWidthProperty().bind(libcTypeBox.widthProperty());
          architectureTitle.prefWidthProperty().bind(architectureBox.widthProperty());
          archiveTypeTitle.prefWidthProperty().bind(archiveTypeBox.widthProperty());
 
@@ -495,11 +508,12 @@
          scene.setFill(Color.TRANSPARENT);
          scene.getStylesheets().add(Main.class.getResource("jdkbutler.css").toExternalForm());
          scene.widthProperty().addListener(o -> {
-            double columnWidth = (pane.getWidth() - PADDING * 2 - 4 * SPACING) / 6;
+            double columnWidth = (pane.getWidth() - PADDING * 2 - 4 * SPACING) / 7;
             majorVersionBox.setPrefWidth(columnWidth);
             versionBox.setPrefWidth(columnWidth);
             distributionBox.setPrefWidth(columnWidth);
             operatingSystemBox.setPrefWidth(columnWidth);
+            libcTypeBox.setPrefWidth(columnWidth);
             architectureBox.setPrefWidth(columnWidth);
             archiveTypeBox.setPrefWidth(columnWidth);
          });
@@ -554,7 +568,7 @@
          this.majorVersions.clear();
          discoClient.getAllMajorVersionsAsync(Optional.empty(), Optional.of(true), Optional.of(true), Optional.of(true)).thenAccept(mvs -> {
              this.majorVersions.addAll(mvs);
-             List<SelectableLabel> labels = new LinkedList<>();
+             Set<SelectableLabel> labels = new LinkedHashSet<>();
              majorVersions.forEach(majorVersion -> {
                  SelectableLabel<MajorVersion> label = new SelectableLabel<>(Integer.toString(majorVersion.getAsInt()), majorVersionToggleGroup, majorVersion, true);
                  label.setAlignment(Pos.CENTER_RIGHT);
@@ -565,6 +579,7 @@
                          selectedSemVer          = null;
                          selectedDistribution    = null;
                          selectedOperatingSystem = null;
+                         selectedLibcType        = null;
                          selectedArchitecture    = null;
                          selectedArchiveType     = null;
                          selectedPkg             = null;
@@ -574,6 +589,8 @@
                          distributions.clear();
                          operatingSystemBox.setVisible(false);
                          operatingSystems.clear();
+                         libcTypeBox.setVisible(false);
+                         libcTypes.clear();
                          architectureBox.setVisible(false);
                          architectures.clear();
                          archiveTypeBox.setVisible(false);
@@ -612,6 +629,7 @@
                      selectedSemVer          = label.getData();
                      selectedDistribution    = null;
                      selectedOperatingSystem = null;
+                     selectedLibcType        = null;
                      selectedArchitecture    = null;
                      selectedArchiveType     = null;
                      selectedPkg             = null;
@@ -648,6 +666,7 @@
                  if (nv) {
                      selectedDistribution    = distribution;
                      selectedOperatingSystem = null;
+                     selectedLibcType        = null;
                      selectedArchitecture    = null;
                      selectedArchiveType     = null;
                      selectedPkg             = null;
@@ -689,12 +708,13 @@
              label.selectedProperty().addListener((o, ov, nv) -> {
                  if (nv) {
                      selectedOperatingSystem = label.getData();
+                     selectedLibcType        = null;
                      selectedArchitecture    = null;
                      selectedArchiveType     = null;
                      selectedPkg             = null;
                      downloadButton.setDisable(true);
                      filenameLabel.setText("-");
-                     updateArchitectures(pkgs, operatingSystem);
+                     updateLibcTypes(pkgs, operatingSystem);
                  }
              });
              labels.add(label);
@@ -702,10 +722,42 @@
          Platform.runLater(() -> operatingSystemBox.getChildren().setAll(labels));
      }
 
-     private void updateArchitectures(final List<Pkg> pkgs, final OperatingSystem operatingSystem) {
+     private void updateLibcTypes(final List<Pkg> pkgs, final OperatingSystem operatingSystem) {
+         Set<LibCType> libCTypes = new HashSet<>();
+         pkgs.stream()
+             .filter(pkg -> pkg.getOperatingSystem() == operatingSystem)
+             .forEach(pkg -> libCTypes.add(pkg.getLibCType()));
+         this.libcTypes.clear();
+         this.libcTypes.addAll(libCTypes);
+         this.libcTypeToggleGroup.getToggles().clear();
+         if (!this.libcTypeBox.isVisible()) { this.libcTypeBox.setVisible(true); }
+         List<SelectableLabel> labels = new LinkedList<>();
+         this.libcTypes.forEach(libcType -> {
+             SelectableLabel<LibCType> label = new SelectableLabel<>(libcType.getUiString(), libcTypeToggleGroup, libcType, true);
+             label.setAlignment(Pos.CENTER_RIGHT);
+             label.setPadding(new Insets(0, TEXT_PADDING, 0, 0));
+             label.prefWidthProperty().bind(libcTypeBox.widthProperty());
+             label.selectedProperty().addListener((o, ov, nv) -> {
+                 if (nv) {
+                     selectedLibcType     = label.getData();
+                     selectedArchitecture = null;
+                     selectedArchiveType  = null;
+                     selectedPkg          = null;
+                     downloadButton.setDisable(true);
+                     filenameLabel.setText("-");
+                     updateArchitectures(pkgs, operatingSystem, selectedLibcType);
+                 }
+             });
+             labels.add(label);
+         });
+         Platform.runLater(() -> libcTypeBox.getChildren().setAll(labels));
+     }
+
+     private void updateArchitectures(final List<Pkg> pkgs, final OperatingSystem operatingSystem, final LibCType libCType) {
          Set<Architecture> architectures = new HashSet<>();
          pkgs.stream()
              .filter(pkg -> pkg.getOperatingSystem() == operatingSystem)
+             .filter(pkg -> pkg.getLibCType() == libCType)
              .forEach(pkg -> architectures.add(pkg.getArchitecture()));
          this.architectures.clear();
          this.architectures.addAll(architectures);
@@ -723,7 +775,7 @@
                      selectedPkg          = null;
                      downloadButton.setDisable(true);
                      filenameLabel.setText("-");
-                     updateArchiveTypes(pkgs, operatingSystem, selectedArchitecture);
+                     updateArchiveTypes(pkgs, operatingSystem, libCType, selectedArchitecture);
                  }
              });
              labels.add(label);
@@ -731,13 +783,14 @@
          Platform.runLater(() -> architectureBox.getChildren().setAll(labels));
      }
 
-     private void updateArchiveTypes(final List<Pkg> pkgs, final OperatingSystem operatingSystem, final Architecture architecture) {
+     private void updateArchiveTypes(final List<Pkg> pkgs, final OperatingSystem operatingSystem, final LibCType libCType, final Architecture architecture) {
          Set<ArchiveType> archiveTypes = new HashSet<>();
          pkgs.stream()
              .filter(pkg -> pkg.getPackageType() == PackageType.JDK)
              .filter(pkg -> pkg.isJavaFXBundled() == javafxBundledCheckBox.isSelected())
              .filter(pkg -> pkg.isDirectlyDownloadable())
              .filter(pkg -> pkg.getOperatingSystem() == operatingSystem)
+             .filter(pkg -> pkg.getLibCType() == libCType)
              .filter(pkg -> pkg.getArchitecture() == architecture)
              .filter(pkg -> pkg.getReleaseStatus() == selectedSemVer.getReleaseStatus())
              .forEach(pkg -> archiveTypes.add(pkg.getArchiveType()));
@@ -765,6 +818,7 @@
                                                          .filter(pkg -> pkg.getJavaVersion().compareTo(selectedSemVer) == 0)
                                                          .filter(pkg -> pkg.getDistribution() == selectedDistribution)
                                                          .filter(pkg -> pkg.getOperatingSystem() == selectedOperatingSystem)
+                                                         .filter(pkg -> pkg.getLibCType() == selectedLibcType)
                                                          .filter(pkg -> pkg.getArchitecture() == selectedArchitecture)
                                                          .filter(pkg -> pkg.getArchiveType() == selectedArchiveType)
                                                          .findFirst();
@@ -789,9 +843,35 @@
          if (null == selectedPkg) { return; }
          final File targetFolder = directoryChooser.showDialog(stage);
          if (null != targetFolder) {
-             final String pkgId    = selectedPkg.getId();
-             final String fileName = selectedPkg.getFileName();
-             discoClient.downloadPkg(pkgId, targetFolder.getAbsolutePath() + File.separator + fileName);
+             final String  fileName = selectedPkg.getFileName();
+             final PkgInfo pkgInfo  = discoClient.getPkgInfo(selectedPkg.getEphemeralId(), selectedPkg.getJavaVersion());
+
+             worker = createWorker(pkgInfo.getDirectDownloadUri(), targetFolder.getAbsolutePath() + File.separator + fileName);
+             worker.stateProperty().addListener((o, ov, nv) -> {
+                 if (nv.equals(State.READY)) {
+                 } else if (nv.equals(State.RUNNING)) {
+                     downloadButton.setDisable(true);
+                     javafxBundledCheckBox.setDisable(true);
+                     allOperatingSystemsCheckBox.setDisable(true);
+                     majorVersionBox.setDisable(true);
+                     versionBox.setDisable(true);
+                     distributionBox.setDisable(true);
+                     operatingSystemBox.setDisable(true);
+                     libcTypeBox.setDisable(true);
+                     architectureBox.setDisable(true);
+                     archiveTypeBox.setDisable(true);
+                 } else if (nv.equals(State.CANCELLED)) {
+                     reset();
+                 } else if (nv.equals(State.FAILED)) {
+                     reset();
+                 } else if (nv.equals(State.SUCCEEDED)) {
+                     reset();
+                 } else if (nv.equals(State.SCHEDULED)) {
+
+                 }
+             });
+             worker.progressProperty().addListener((o, ov, nv) -> progressBar.setProgress(nv.doubleValue() * 100.0));
+             new Thread((Runnable) worker).start();
          }
      }
 
@@ -801,10 +881,14 @@
              selectedSemVer          = null;
              selectedDistribution    = null;
              selectedOperatingSystem = null;
+             selectedLibcType        = null;
              selectedArchitecture    = null;
              selectedArchiveType     = null;
              selectedPkg             = null;
              downloadButton.setDisable(true);
+             javafxBundledCheckBox.setDisable(false);
+             allOperatingSystemsCheckBox.setDisable(false);
+             progressBar.setProgress(0);
              filenameLabel.setText("-");
              versionBox.setVisible(false);
              versions.clear();
@@ -812,6 +896,8 @@
              distributions.clear();
              operatingSystemBox.setVisible(false);
              operatingSystems.clear();
+             libcTypeBox.setVisible(false);
+             libcTypes.clear();
              architectureBox.setVisible(false);
              architectures.clear();
              archiveTypeBox.setVisible(false);
@@ -825,6 +911,29 @@
          Label label = new Label(text);
          label.getStyleClass().add("title");
          return label;
+     }
+
+     private Worker<Boolean> createWorker(final String uri, final String filename) {
+         return new Task<>() {
+             @Override protected Boolean call() {
+                 updateProgress(0, 100);
+                 try {
+                     final URLConnection         connection = new URL(uri).openConnection();
+                     final int                   fileSize   = connection.getContentLength();
+                     ReadableByteChannel         rbc  = Channels.newChannel(connection.getInputStream());
+                     ReadableConsumerByteChannel rcbc = new ReadableConsumerByteChannel(rbc, (b) -> updateProgress((double) b / (double) fileSize, 100));
+                     FileOutputStream            fos  = new FileOutputStream(filename);
+                     fos.getChannel().transferFrom(rcbc, 0, Long.MAX_VALUE);
+                     fos.close();
+                     rcbc.close();
+                     rbc.close();
+                 } catch (IOException ex) {
+                     return Boolean.FALSE;
+                 }
+                 updateProgress(0, 100);
+                 return Boolean.TRUE;
+             }
+         };
      }
 
 

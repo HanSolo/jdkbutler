@@ -252,6 +252,35 @@
 }
 
 
+.jdk-butler .libc-type-box {
+    -fx-background-color: -light-content-background;
+    -fx-border-color    : -light-border-color;
+    -fx-border-color    : -light-border-color -light-border-color -light-border-color transparent;
+    -fx-border-style    : solid solid solid none;
+    -fx-border-width    : 1 1 1 0;
+    -fx-padding         : 5;
+}
+.jdk-butler .libc-type-box > .selectable-label {
+    -fx-text-fill  : -light-text-color;
+    -fx-font-family: 'SF Pro';
+}
+.jdk-butler .libc-type-box > .selectable-label:selected {
+    -fx-text-fill: -selection-color;
+}
+
+.jdk-butler:dark .libc-type-box {
+    -fx-background-color: -dark-content-background;
+    -fx-border-color    : -dark-border-color;
+    -fx-border-color    : -dark-border-color -dark-border-color -dark-border-color transparent;
+}
+.jdk-butler:dark .libc-type-box > .selectable-label {
+    -fx-text-fill: -text-color;
+}
+.jdk-butler:dark .libc-type-box > .selectable-label:selected {
+    -fx-text-fill: -selection-color;
+}
+
+
 .jdk-butler .architecture-box {
     -fx-background-color: -light-content-background;
     -fx-border-color    : -light-border-color;
