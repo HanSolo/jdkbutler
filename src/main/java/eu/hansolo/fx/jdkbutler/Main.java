@@ -175,6 +175,7 @@
      private              MacOSAccentColor      accentColor;
      private              BorderPane            mainPane;
      private              Worker<Boolean>       worker;
+     private              String                target;
 
 
      // ******************** Initialization ***********************************
@@ -844,9 +845,9 @@
          final File targetFolder = directoryChooser.showDialog(stage);
          if (null != targetFolder) {
              final String  fileName = selectedPkg.getFileName();
-             final PkgInfo pkgInfo  = discoClient.getPkgInfo(selectedPkg.getEphemeralId(), selectedPkg.getJavaVersion());
-
-             worker = createWorker(pkgInfo.getDirectDownloadUri(), targetFolder.getAbsolutePath() + File.separator + fileName);
+             final String directDownloadUri = discoClient.getPkgDirectDownloadUri(selectedPkg.getId());
+             target = targetFolder.getAbsolutePath() + File.separator + fileName;
+             worker = createWorker(directDownloadUri, target);
              worker.stateProperty().addListener((o, ov, nv) -> {
                  if (nv.equals(State.READY)) {
                  } else if (nv.equals(State.RUNNING)) {
@@ -861,8 +862,12 @@
                      architectureBox.setDisable(true);
                      archiveTypeBox.setDisable(true);
                  } else if (nv.equals(State.CANCELLED)) {
+                     File file = new File(target);
+                     if (file.exists()) { file.delete(); }
                      reset();
                  } else if (nv.equals(State.FAILED)) {
+                     File file = new File(target);
+                     if (file.exists()) { file.delete(); }
                      reset();
                  } else if (nv.equals(State.SUCCEEDED)) {
                      reset();
