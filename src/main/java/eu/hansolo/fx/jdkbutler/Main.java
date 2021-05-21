@@ -678,7 +678,7 @@
                      VersionNumber versionNumber = VersionNumber.fromText(semVer.toString(true));
                      ReleaseStatus releaseStatus = semVer.getReleaseStatus();
                      pkgs.clear();
-                     discoClient.getPkgsAsync(distribution, versionNumber, Latest.NONE, operatingSystem, LibCType.NONE, Architecture.NONE, Bitness.NONE, ArchiveType.NONE,
+                     discoClient.getPkgsAsync(List.of(distribution), versionNumber, Latest.NONE, operatingSystem, LibCType.NONE, Architecture.NONE, Bitness.NONE, ArchiveType.NONE,
                                               PackageType.JDK, javafxBundledCheckBox.isSelected(), true, List.of(releaseStatus), TermOfSupport.NONE, List.of(Scope.PUBLIC), Match.ANY).thenAccept(pk -> {
                                                   pkgs.addAll(pk);
                                                   architectureBox.setVisible(false);
@@ -802,7 +802,7 @@
          if (!this.archiveTypeBox.isVisible()) { this.archiveTypeBox.setVisible(true); }
          List<SelectableLabel> labels = new LinkedList<>();
          List<Pkg> packages = new LinkedList<>();
-         discoClient.getPkgsAsync(selectedDistribution, selectedSemVer.getVersionNumber(), Latest.NONE, selectedOperatingSystem, LibCType.NONE, selectedArchitecture, selectedArchitecture.getBitness(), ArchiveType.NONE, PackageType.JDK, javafxBundledCheckBox.isSelected(),true, List.of(selectedSemVer.getReleaseStatus()), TermOfSupport.NONE, List.of(Scope.PUBLIC), Match.ANY).thenAccept(pkgsFound -> packages.addAll(pkgs));
+         discoClient.getPkgsAsync(List.of(selectedDistribution), selectedSemVer.getVersionNumber(), Latest.NONE, selectedOperatingSystem, LibCType.NONE, selectedArchitecture, selectedArchitecture.getBitness(), ArchiveType.NONE, PackageType.JDK, javafxBundledCheckBox.isSelected(),true, List.of(selectedSemVer.getReleaseStatus()), TermOfSupport.NONE, List.of(Scope.PUBLIC), Match.ANY).thenAccept(pkgsFound -> packages.addAll(pkgs));
          this.archiveTypes.forEach(archiveType -> {
              SelectableLabel<ArchiveType> label = new SelectableLabel<>(archiveType.getUiString(), archiveTypeToggleGroup, archiveType, false);
              label.setAlignment(Pos.CENTER_RIGHT);
