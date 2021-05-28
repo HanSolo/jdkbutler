@@ -65,6 +65,8 @@
  import javafx.scene.control.ToggleGroup;
  import javafx.scene.effect.BlurType;
  import javafx.scene.effect.DropShadow;
+ import javafx.scene.image.Image;
+ import javafx.scene.image.ImageView;
  import javafx.scene.input.MouseEvent;
  import javafx.scene.layout.AnchorPane;
  import javafx.scene.layout.Background;
@@ -114,6 +116,7 @@
      private static final double                SPACING                = 0;
      private static final double                MIN_COLUMN_WIDTH       = 120;
      private static final PseudoClass           DARK_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
+     private        final Image                 attention              = new Image(Main.class.getResource("attention.png").toExternalForm(), 12, 12, true, false);
      private              Stage                 stage;
      private              BooleanProperty       darkMode;
      private              AnchorPane            headerPane;
@@ -125,6 +128,7 @@
      private              SearchField           versionSearchField;
      private              CheckBox              allOperatingSystemsCheckBox;
      private              CheckBox              javafxBundledCheckBox;
+     private              ImageView             attentionImg;
      private              Label                 usageInfoLabel;
      private              HBox                  optionBox;
      private              Label                 majorVersionTitle;
@@ -256,6 +260,8 @@
 
          javafxBundledCheckBox = new CheckBox("JavaFX bundled");
          javafxBundledCheckBox.setFont(Fonts.sfPro(14));
+
+         attentionImg = new ImageView(attention);
 
          usageInfoLabel = new Label("");
          usageInfoLabel.getStyleClass().add("info-label");
@@ -607,7 +613,11 @@
      }
 
      private void updateVersions(final MajorVersion majorVersion) {
-         List<SemVer> allVersions = majorVersion.getVersions();
+         List<SemVer> allVersions = majorVersion.getVersions()
+                                                .stream()
+                                                .filter(semver -> majorVersion.isEarlyAccessOnly() ? ReleaseStatus.EA == semver.getReleaseStatus() : ReleaseStatus.GA == semver.getReleaseStatus())
+                                                .collect(Collectors.toList());
+
          if (!majorVersion.isEarlyAccessOnly()) {
              allVersions = allVersions.stream()
                                       .map(semver -> semver.getVersionNumber().toString(OutputFormat.REDUCED_COMPRESSED, true, false))
@@ -826,10 +836,14 @@
                                                          .findFirst();
                      if (optionalPkg.isPresent()) {
                          selectedPkg = optionalPkg.get();
-                         switch(selectedPkg.getUsageInfo()) {
-                             case FREE_TO_USE    -> usageInfoLabel.setText("(Selected package is free to use)");
-                             case LICENSE_NEEDED -> usageInfoLabel.setText("(Selected pacakge needs a license for production use)");
-                             default             -> usageInfoLabel.setText("");
+                         if (selectedPkg.getFreeUseInProduction()) {
+                             usageInfoLabel.setGraphic(null);
+                             usageInfoLabel.setGraphicTextGap(0);
+                             usageInfoLabel.setText("(Free to use in production)");
+                         } else {
+                             usageInfoLabel.setGraphic(attentionImg);
+                             usageInfoLabel.setGraphicTextGap(5);
+                             usageInfoLabel.setText("(Needs license for use in production)");
                          }
                          downloadButton.setDisable(false);
                          filenameLabel.setText(selectedPkg.getFileName());
