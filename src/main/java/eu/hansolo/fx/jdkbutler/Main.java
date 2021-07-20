@@ -647,6 +647,8 @@
                      selectedPkg             = null;
                      downloadButton.setDisable(true);
                      filenameLabel.setText("-");
+                     libcTypeBox.setVisible(false);
+                     libcTypes.clear();
                      operatingSystemBox.setVisible(false);
                      operatingSystems.clear();
                      architectureBox.setVisible(false);
@@ -682,6 +684,10 @@
                      selectedArchitecture    = null;
                      selectedArchiveType     = null;
                      selectedPkg             = null;
+                     libcTypeBox.setVisible(false);
+                     libcTypes.clear();
+                     operatingSystemBox.setVisible(false);
+                     operatingSystems.clear();
                      downloadButton.setDisable(true);
                      filenameLabel.setText("-");
                      SemVer        semVer        = ((SelectableLabel<SemVer>) versionToggleGroup.getSelectedToggle()).getData();
