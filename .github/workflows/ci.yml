@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: JDKButler Windows
-          path: '.\build\installer\JDKButler-17.4.msi'
+          path: '.\build\installer\JDKButler-17.5.msi'
 
 
 
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: JDKButler Mac
-          path: ./build/installer/JDKButler-17.4.pkg
+          path: ./build/installer/JDKButler-17.5.pkg
 
 
   build-linux:
@@ -71,5 +71,5 @@ jobs:
         run: ./build_app_linux.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: JDKMon Linux
-          path: ./build/installer/jdkmon_17.4-1_amd64.deb
+          name: JDKButler Linux
+          path: ./build/installer/jdkbutler_17.5-1_amd64.deb
