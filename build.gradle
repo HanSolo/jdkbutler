@@ -60,7 +60,7 @@ jar {
     manifest {
         attributes(
                 'Implementation-Title': 'JDKButler',
-                'Class-Path': 'jdkbutler-15.0.jar',
+                'Class-Path': 'jdkbutler-17.4.jar',
                 'Main-Class': 'eu.hansolo.fx.jdkbutler.Launcher'
         )
     }

@@ -94,7 +94,7 @@ $JAVA_HOME/bin/jlink \
 # A loop iterates over the various packaging types supported by jpackage. In
 # the end we will find all packages inside the build/installer directory.
 
-for type in "app-image" "dmg" "pkg"
+for type in "deb" "rpm"
 do
   echo "Creating installer of type ... $type"
 
@@ -108,10 +108,10 @@ do
   --java-options -Xmx2048m \
   --java-options '--enable-preview' \
   --runtime-image build/java-runtime \
-  --icon src/main/resources/eu/hansolo/fx/jdkbutler/icon.icns \
+  --icon src/main/resources/eu/hansolo/fx/jdkbutler/icon128x128.png \
+  --linux-shortcut \
+  --linux-menu-group "JDKButler" \
   --app-version ${APP_VERSION} \
   #--vendor "Alliance" \
   #--copyright "Copyright © 2021 Alliance Inc." \
-  #--mac-package-identifier eu.hansolo.fx.jdkbutler \
-  #--mac-package-name Alliance
 done

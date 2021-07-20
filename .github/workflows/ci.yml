@@ -1,4 +1,4 @@
-name: create-snapshot
+name: ci
 
 on: [push, pull_request]
 
@@ -12,7 +12,7 @@ jobs:
       - name: Set up JDK 16
         uses: actions/setup-java@v1
         with:
-          java-version: 16
+          java-version: 16.0.1
           architecture: x64
       - name: Build with Gradle
         run: .\gradlew.bat assemble
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: JDKButler Windows
-          path: '.\build\installer\JDKButler-16.0.0.msi'
+          path: '.\build\installer\JDKButler-17.4.msi'
 
 
 
@@ -34,7 +34,7 @@ jobs:
       - name: Set up JDK 16
         uses: actions/setup-java@v1
         with:
-          java-version: 16
+          java-version: 16.0.1
           architecture: x64
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -47,4 +47,29 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: JDKButler Mac
-          path: ./build/installer/JDKButler-16.0.0.pkg
+          path: ./build/installer/JDKButler-17.4.pkg
+
+
+build-linux:
+
+    runs-on: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 16
+        uses: actions/setup-java@v1
+        with:
+          java-version: 16.0.1
+          architecture: x64
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Grant execute permission for build_app_linux.sh
+        run: chmod +x ./build_app_linux.sh
+      - name: Create Distribution
+        run: ./build_app_linux.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: JDKMon Linux
+          path: ./build/installer/jdkmon_17.4-1_amd64.deb
