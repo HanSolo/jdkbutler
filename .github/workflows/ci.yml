@@ -50,7 +50,7 @@ jobs:
           path: ./build/installer/JDKButler-17.4.pkg
 
 
-build-linux:
+  build-linux:
 
     runs-on: [ ubuntu-latest ]
 
