@@ -1,4 +1,5 @@
-# JDKButler
+# JDKButler <img align="right" src="https://github.com/foojay2020/badges/raw/main/works_with_openjdk/Works-with-OpenJDK.png" width="100">
+<br>
 
 ![Logo](https://github.com/HanSolo/jdkbutler/raw/main/JDK_Butler_Duke.png)
 
